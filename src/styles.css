@@ -189,6 +189,25 @@
   animation-play-state: paused;
 }
 
+/* Flutuação suave para elementos decorativos */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.animate-float {
+  animation: float 7s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float 11s ease-in-out infinite;
+}
+
 /* Textura de grão sutil para as seções escuras (dados: SVG inline) */
 .bg-noise {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
@@ -198,7 +217,9 @@
   html {
     scroll-behavior: auto;
   }
-  .marquee-track {
+  .marquee-track,
+  .animate-float,
+  .animate-float-slow {
     animation: none;
   }
 }

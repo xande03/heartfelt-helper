@@ -26,7 +26,7 @@ import {
   X,
 } from "lucide-react";
 
-import { Reveal } from "../components/reveal";
+import { Parallax, Reveal, Tilt } from "../components/motion";
 import { business, formatSlots, getOpenStatus, links, type OpenStatus } from "../lib/business";
 
 export const Route = createFileRoute("/")({
@@ -160,6 +160,7 @@ function LandingPage() {
   const [status, setStatus] = useState<OpenStatus | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [lightbox, setLightbox] = useState<number | null>(null);
 
   // Calculado no cliente para evitar divergência de hidratação (SSR × fuso)
@@ -169,12 +170,27 @@ function LandingPage() {
     return () => clearInterval(t);
   }, []);
 
-  // Sombra sutil na nav depois de rolar
+  // Sombra sutil na nav + barra de progresso de leitura
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        setScrolled(window.scrollY > 8);
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - window.innerHeight;
+        setProgress(max > 0 ? Math.min(1, window.scrollY / max) : 0);
+      });
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
 
   // Lightbox: teclado + trava de scroll
@@ -291,6 +307,12 @@ function LandingPage() {
             : "bg-brand-cream/85"
         }`}
       >
+        {/* Barra de progresso de leitura */}
+        <span
+          aria-hidden
+          className="absolute bottom-0 left-0 h-[2.5px] rounded-r-full bg-gradient-to-r from-brand-red to-brand-gold"
+          style={{ width: `${progress * 100}%` }}
+        />
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
           <a href="#topo" className="flex items-center gap-3">
             <img
@@ -371,14 +393,26 @@ function LandingPage() {
 
       {/* ============================ HERO ============================ */}
       <section id="topo" className="relative isolate overflow-hidden bg-brand-brown">
-        <img
-          src="/images/fachada-hero.jpg"
-          alt={`Fachada da ${business.name} na Rua da Felicidade, Vila Bacanga`}
-          fetchPriority="high"
-          className="absolute inset-0 h-full w-full object-cover object-center"
-        />
+        <Parallax maxPx={60} className="absolute inset-0">
+          <img
+            src="/images/fachada-hero.jpg"
+            alt={`Fachada da ${business.name} na Rua da Felicidade, Vila Bacanga`}
+            fetchPriority="high"
+            className="h-full w-full scale-[1.15] object-cover object-center"
+          />
+        </Parallax>
         <div className="absolute inset-0 bg-gradient-to-b from-brand-brown/85 via-brand-brown/70 to-brand-brown/95" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_20%,rgba(201,150,44,0.22),transparent_55%)]" />
+        <Wheat
+          aria-hidden
+          strokeWidth={1}
+          className="animate-float-slow pointer-events-none absolute top-24 -right-10 h-44 w-44 -rotate-12 text-brand-gold/10"
+        />
+        <Coffee
+          aria-hidden
+          strokeWidth={1}
+          className="animate-float pointer-events-none absolute bottom-28 -left-8 h-36 w-36 rotate-12 text-brand-gold/10"
+        />
         <div className="bg-noise pointer-events-none absolute inset-0 opacity-[0.05] mix-blend-overlay" />
 
         <div className="relative mx-auto max-w-6xl px-5 pt-16 pb-14 sm:pt-24 sm:pb-20">
@@ -505,25 +539,34 @@ function LandingPage() {
               const Icon = HIGHLIGHT_ICONS[h.icon as keyof typeof HIGHLIGHT_ICONS] ?? Wheat;
               return (
                 <Reveal key={h.title} delay={i * 90} className="h-full">
-                  <article className="group flex h-full flex-col rounded-3xl border border-brand-brown/10 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-red/25 hover:shadow-[0_18px_40px_-18px_rgba(46,27,18,0.28)]">
-                    <span className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-red-soft text-brand-red transition-all duration-300 group-hover:-rotate-6 group-hover:scale-105 group-hover:bg-brand-red group-hover:text-white">
-                      <Icon className="h-6 w-6" strokeWidth={1.8} />
-                    </span>
-                    <h3 className="font-display text-xl font-semibold tracking-tight">{h.title}</h3>
-                    <p className="mt-2.5 flex-1 text-sm leading-relaxed text-brand-brown-soft">
-                      {h.text}
-                    </p>
-                    <ul className="mt-5 flex flex-wrap gap-1.5">
-                      {h.tags.map((t) => (
-                        <li
-                          key={t}
-                          className="rounded-full bg-brand-sand px-2.5 py-1 text-[11px] font-medium text-brand-brown-soft"
-                        >
-                          {t}
-                        </li>
-                      ))}
-                    </ul>
-                  </article>
+                  <Tilt max={6} className="h-full">
+                    <article className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-brand-brown/10 bg-white p-6 transition-all duration-300 hover:border-brand-red/25 hover:shadow-[0_18px_40px_-18px_rgba(46,27,18,0.28)]">
+                      {/* Spotlight que segue o cursor (vars --mx/--my do Tilt) */}
+                      <span
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0 bg-[radial-gradient(260px_circle_at_var(--mx,50%)_var(--my,50%),rgba(190,42,44,0.08),transparent_70%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      />
+                      <span className="relative z-10 mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-red-soft text-brand-red transition-all duration-300 group-hover:-rotate-6 group-hover:scale-105 group-hover:bg-brand-red group-hover:text-white">
+                        <Icon className="h-6 w-6" strokeWidth={1.8} />
+                      </span>
+                      <h3 className="relative z-10 font-display text-xl font-semibold tracking-tight">
+                        {h.title}
+                      </h3>
+                      <p className="relative z-10 mt-2.5 flex-1 text-sm leading-relaxed text-brand-brown-soft">
+                        {h.text}
+                      </p>
+                      <ul className="relative z-10 mt-5 flex flex-wrap gap-1.5">
+                        {h.tags.map((t) => (
+                          <li
+                            key={t}
+                            className="rounded-full bg-brand-sand px-2.5 py-1 text-[11px] font-medium text-brand-brown-soft"
+                          >
+                            {t}
+                          </li>
+                        ))}
+                      </ul>
+                    </article>
+                  </Tilt>
                 </Reveal>
               );
             })}
@@ -638,15 +681,18 @@ function LandingPage() {
           </Reveal>
 
           <Reveal delay={140} className="relative">
-            <div className="overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl">
+            <Parallax
+              maxPx={35}
+              className="h-[26rem] w-full overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl sm:h-[34rem]"
+            >
               <img
                 src="/images/rua-do-bairro.jpg"
                 alt="Rua da Felicidade com a fachada da Panificadora Bacanga"
                 loading="lazy"
-                className="h-[26rem] w-full object-cover sm:h-[34rem]"
+                className="-mt-[9%] h-[118%] w-full object-cover"
               />
-            </div>
-            <div className="absolute -bottom-6 -left-4 hidden max-w-[15rem] rounded-2xl bg-brand-cream p-5 shadow-xl sm:block lg:-left-10">
+            </Parallax>
+            <div className="animate-float absolute -bottom-6 -left-4 hidden max-w-[15rem] rounded-2xl bg-brand-cream p-5 shadow-xl sm:block lg:-left-10">
               <Quote className="h-5 w-5 text-brand-red" />
               <p className="mt-2 font-display text-[15px] leading-snug font-medium text-brand-brown italic">
                 “Frequento desde que eu era criança e a cada dia eles se superam.”
@@ -688,7 +734,11 @@ function LandingPage() {
           <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {business.reviews.map((r, i) => (
               <Reveal key={`${r.name}-${i}`} delay={(i % 3) * 90} className="h-full">
-                <blockquote className="flex h-full flex-col rounded-3xl border border-brand-brown/10 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-red/20 hover:shadow-[0_16px_36px_-20px_rgba(46,27,18,0.3)]">
+                <blockquote
+                  className={`flex h-full flex-col rounded-3xl border border-brand-brown/10 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:rotate-0 hover:border-brand-red/20 hover:shadow-[0_16px_36px_-20px_rgba(46,27,18,0.3)] ${
+                    i % 2 === 0 ? "rotate-[0.6deg]" : "-rotate-[0.6deg]"
+                  }`}
+                >
                   <div className="flex items-center justify-between gap-3">
                     <Stars value={r.stars} />
                     {r.badge && (
@@ -928,7 +978,8 @@ function LandingPage() {
                         ][i]
                       }
                       loading="lazy"
-                      className={`h-36 w-full rounded-2xl object-cover ring-1 ring-white/20 sm:h-40 ${
+                      style={{ animationDelay: `${i * 1.3}s` }}
+                      className={`animate-float-slow h-36 w-full rounded-2xl object-cover ring-1 ring-white/20 sm:h-40 ${
                         i % 2 === 1 ? "translate-y-4" : ""
                       }`}
                     />
