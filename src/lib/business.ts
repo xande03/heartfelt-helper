@@ -102,6 +102,45 @@ export const business = {
 
   payments: ["Dinheiro", "Pix", "Cartões de crédito", "Cartões de débito"],
 
+  /**
+   * Categorias de produtos — fotos reais do estabelecimento (Google Business).
+   * `items` citados nas descrições oficiais e nas avaliações públicas.
+   */
+  products: [
+    {
+      img: "/images/balcao-paes.jpg",
+      alt: "Cestos de pão fresco no balcão da padaria",
+      title: "Pães & bolos",
+      badge: "Sai do forno",
+      desc: "Pão francês quentinho, pão suíço de frango, roscas e bolos assados várias vezes ao dia.",
+      items: ["Pão francês", "Pão suíço", "Rosca", "Bolos"],
+    },
+    {
+      img: "/images/salgados.jpg",
+      alt: "Salgados assados na vitrine",
+      title: "Salgados & lanches",
+      badge: "Quentinhos",
+      desc: "A melhor bomba e o pastel folheado da cidade, com sanduíches e pizzas feitas na hora.",
+      items: ["Bomba", "Pastel folheado", "Sanduíches", "Pizzas"],
+    },
+    {
+      img: "/images/vitrine-interior.jpg",
+      alt: "Balcão de vidro e vitrine de salgados vistos de dentro",
+      title: "Vitrine & doces",
+      badge: "Da vitrine",
+      desc: "Queijadinha, petit four de cebola, donuts e doces caseiros saindo quentinhos da vitrine.",
+      items: ["Queijadinha", "Petit four", "Donuts", "Doces caseiros"],
+    },
+    {
+      img: "/images/salao.jpg",
+      alt: "Salão com mesas da lanchonete",
+      title: "Café & conveniência",
+      badge: "Na hora",
+      desc: "Café passado na hora, sucos, refrigerantes e tudo para abastecer a dispensa da casa.",
+      items: ["Café passado", "Sucos", "Refrigerantes", "Despensa"],
+    },
+  ] as const,
+
   /** Itens citados em avaliações reais e nas descrições oficiais do negócio */
   highlights: [
     {

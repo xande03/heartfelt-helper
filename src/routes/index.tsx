@@ -116,6 +116,7 @@ function StatusPill({ status, dark = false }: { status: OpenStatus | null; dark?
 /** Itens do menu (estáticos — nível de módulo para deps estáveis em effects). */
 const NAV_ITEMS = [
   { href: "#destaques", label: "A casa" },
+  { href: "#produtos", label: "Produtos" },
   { href: "#vitrine", label: "Vitrine" },
   { href: "#avaliacoes", label: "Avaliações" },
   { href: "#horarios", label: "Horários" },
@@ -671,6 +672,84 @@ function LandingPage() {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* ============================ PRODUTOS ============================ */}
+      <section
+        id="produtos"
+        className="scroll-mt-20 border-t border-brand-brown/5 bg-white px-5 py-20 sm:py-28"
+      >
+        <div className="mx-auto max-w-6xl">
+          <Reveal className="max-w-2xl">
+            <SectionLabel>Sai do forno todos os dias</SectionLabel>
+            <h2 className="font-display text-3xl leading-tight font-semibold tracking-tight sm:text-[2.75rem]">
+              Nossos <span className="text-brand-red italic">produtos</span>, do pão ao café.
+            </h2>
+            <p className="mt-5 text-[15px] leading-relaxed text-brand-brown-soft sm:text-base">
+              Fotos reais do nosso balcão. O que você vê aqui é o que sai da nossa cozinha todos os
+              dias — e quando acaba, é só chamar no WhatsApp que a gente assa mais.
+            </p>
+          </Reveal>
+
+          <div className="mt-14 grid gap-6 sm:grid-cols-2">
+            {business.products.map((p, i) => (
+              <Reveal key={p.title} delay={(i % 2) * 110} className="h-full">
+                <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-brand-brown/10 bg-white shadow-[0_10px_30px_-24px_rgba(46,27,18,0.4)] transition-all duration-300 hover:-translate-y-1.5 hover:border-brand-red/25 hover:shadow-[0_24px_50px_-22px_rgba(46,27,18,0.38)]">
+                  <div className="relative h-48 overflow-hidden sm:h-52">
+                    <img
+                      src={p.img}
+                      alt={p.alt}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-brown/55 via-transparent to-transparent" />
+                    <span className="absolute bottom-3 left-4 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold tracking-wide text-brand-brown uppercase backdrop-blur-sm">
+                      <Sparkles className="h-3 w-3 text-brand-gold" />
+                      {p.badge}
+                    </span>
+                  </div>
+                  <div className="flex flex-1 flex-col p-6">
+                    <h3 className="font-display text-xl font-semibold tracking-tight">{p.title}</h3>
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-brand-brown-soft">
+                      {p.desc}
+                    </p>
+                    <ul className="mt-5 flex flex-wrap gap-1.5">
+                      {p.items.map((t) => (
+                        <li
+                          key={t}
+                          className="rounded-full bg-brand-sand px-2.5 py-1 text-[11px] font-medium text-brand-brown-soft"
+                        >
+                          {t}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal
+            delay={200}
+            className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-brand-brown/10 pt-8"
+          >
+            <p className="text-sm text-brand-brown-soft">
+              Fotos reais da nossa casa ·{" "}
+              <span className="font-semibold text-brand-brown">
+                encomendas e novidades pelo WhatsApp
+              </span>
+            </p>
+            <a
+              href={links.whatsappMsg}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex items-center gap-2 text-sm font-semibold text-brand-red"
+            >
+              Pedir pelo WhatsApp
+              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </a>
+          </Reveal>
         </div>
       </section>
 
