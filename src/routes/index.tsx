@@ -393,10 +393,10 @@ function LandingPage() {
         className="fixed top-0 left-0 z-50 h-[3px] rounded-r-full bg-gradient-to-r from-brand-red to-brand-gold"
         style={{ width: `${progress * 100}%` }}
       />
-      <header className="sticky top-6 z-40 mx-auto w-full max-w-6xl px-4 sm:px-5">
+      <header className="sticky top-6 z-40 mx-auto w-full max-w-[74rem] px-4 sm:px-5">
         {/* Parallax: a ilha se move alguns px com atraso em relação ao scroll */}
         <div
-          className="mx-auto w-fit will-change-transform transition-transform duration-700 ease-out"
+          className="mx-auto w-full will-change-transform transition-transform duration-700 ease-out"
           style={{ transform: `translateY(${pillOffset}px)` }}
         >
           <div
@@ -450,7 +450,7 @@ function LandingPage() {
                   key={n.href}
                   href={n.href}
                   data-nav={n.href}
-                  className={`relative z-10 rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-300 ${
+                  className={`relative z-10 rounded-full px-3 py-2 text-sm font-medium transition-colors duration-300 ${
                     active === n.href
                       ? "text-brand-red"
                       : "text-brand-brown-soft hover:text-brand-red"
@@ -488,10 +488,11 @@ function LandingPage() {
                 href={links.whatsappMsg}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hidden items-center gap-2 rounded-full bg-whatsapp px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:bg-whatsapp-dark hover:shadow-md active:scale-95 sm:inline-flex"
+                aria-label="Pedir no WhatsApp"
+                className="hidden h-auto w-auto items-center gap-2 rounded-full bg-whatsapp px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:bg-whatsapp-dark hover:shadow-md active:scale-95 sm:inline-flex lg:h-10 lg:w-10 lg:justify-center lg:px-0 xl:h-auto xl:w-auto xl:px-4"
               >
-                <MessageCircle className="h-4 w-4" strokeWidth={2.2} />
-                Pedir no WhatsApp
+                <MessageCircle className="h-4 w-4 shrink-0" strokeWidth={2.2} />
+                <span className="hidden xl:inline">Pedir no WhatsApp</span>
               </a>
               <button
                 type="button"
