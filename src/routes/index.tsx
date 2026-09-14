@@ -316,7 +316,7 @@ function LandingPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
           <a href="#topo" className="flex items-center gap-3">
             <img
-              src="/images/logo-brasao.jpg"
+              src="/images/logo.png"
               alt={`Brasão ${business.name}`}
               className="h-11 w-11 rounded-full object-cover ring-2 ring-brand-gold/50"
             />
@@ -998,7 +998,7 @@ function LandingPage() {
             <div className="lg:col-span-2">
               <div className="flex items-center gap-3">
                 <img
-                  src="/images/logo-brasao.jpg"
+                  src="/images/logo.png"
                   alt=""
                   className="h-12 w-12 rounded-full object-cover ring-2 ring-brand-gold/50"
                 />
