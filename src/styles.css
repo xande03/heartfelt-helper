@@ -81,9 +81,9 @@
   --color-brand-gold: #c9962c;
   --color-brand-gold-soft: #e8c777;
 
-  /* Verde oficial do WhatsApp (botões de pedido) */
-  --color-whatsapp: #25d366;
-  --color-whatsapp-dark: #1da851;
+  /* Verde do WhatsApp (botões de pedido) */
+  --color-whatsapp: #1db95c;
+  --color-whatsapp-dark: #159c4d;
 }
 
 :root {
