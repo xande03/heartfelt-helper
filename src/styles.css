@@ -1,3 +1,6 @@
+/* Tipografia da marca — degrada para Georgia/system-ui se a rede estiver bloqueada */
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Inter:wght@300..800&display=swap");
+
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -59,6 +62,24 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* ------------------------------------------------------------------
+   * Paleta da marca Panificadora e Conveniência Bacanga
+   * Extraída do letreiro real da loja (toldo vermelho, brasão dourado
+   * sobre marrom, vitrine creme).
+   * ------------------------------------------------------------------ */
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --color-brand-red: #be2a2c;
+  --color-brand-red-dark: #8e1c1f;
+  --color-brand-red-soft: #f7e3e1;
+  --color-brand-cream: #fdf9f2;
+  --color-brand-sand: #f3e9d8;
+  --color-brand-brown: #2e1b12;
+  --color-brand-brown-soft: #5b4436;
+  --color-brand-gold: #c9962c;
+  --color-brand-gold-soft: #e8c777;
 }
 
 :root {
