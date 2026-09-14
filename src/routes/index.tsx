@@ -864,6 +864,74 @@ function LandingPage() {
         </div>
       </section>
 
+      {/* ============================ PROPOSIITO ============================ */}
+      <section className="scroll-mt-20 bg-surface px-5 py-20 sm:py-28">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+          <Reveal>
+            <SectionLabel>Nosso propósito</SectionLabel>
+            <h2 className="font-display text-3xl leading-tight font-semibold tracking-tight sm:text-[2.75rem]">
+              Feita para servir a Vila Bacanga,{" "}
+              <span className="text-brand-red italic">todos os dias.</span>
+            </h2>
+            <p className="mt-6 text-[15px] leading-relaxed text-brand-brown-soft sm:text-base">
+              Nossa missão é simples: manter a mesa da vizinhança farta. Acender o forno de
+              madrugada, encher a prateleira, passar o café na hora e atender cada um como quem
+              recebe em casa — para que quem passa pela Rua da Felicidade sempre encontre pão
+              quentinho, preço justo e boas-vindas.
+            </p>
+            <p className="mt-4 text-[15px] leading-relaxed text-brand-brown-soft sm:text-base">
+              A competência se constrói no balcão, dia após dia: assar várias vezes por dia para o
+              pão francês nunca terminar, folhear cada pastel no ponto certo, cuidar da vitrine e
+              manter a conveniência completa. É esse padrão, repetido sem falhar, que faz a
+              comunidade voltar — e indicar a gente para todo mundo.
+            </p>
+            <p className="mt-6 border-l-2 border-brand-gold/60 pl-4 text-[15px] leading-relaxed text-brand-brown-soft italic">
+              E a referência que carregamos vai além das avaliações: está nas famílias que vêm desde
+              que eram crianças, no balcão que conhece o nome de quem passa — e na fé que nos lembra
+              que dar pão é um ato de generosidade.
+            </p>
+          </Reveal>
+
+          <Reveal delay={140}>
+            <div className="grid h-full grid-cols-2 gap-4">
+              {[
+                {
+                  value: business.rating.value.toString().replace(".", ","),
+                  suffix: "★",
+                  label: `estrelas no Google · ${business.rating.count} avaliações`,
+                },
+                {
+                  value: `#${business.ranking.position}`,
+                  suffix: "",
+                  label: `de ${business.ranking.total.toLocaleString("pt-BR")} lugares para comer em ${business.ranking.city}`,
+                },
+                {
+                  value: "05:45",
+                  suffix: "",
+                  label: "abrimos de segunda a sábado",
+                },
+                {
+                  value: "Sempre",
+                  suffix: "",
+                  label: "no coração da Vila Bacanga",
+                },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  className="flex flex-col justify-center rounded-3xl border border-brand-brown/10 bg-surface-card p-6"
+                >
+                  <div className="font-display text-3xl font-semibold tracking-tight text-brand-brown dark:text-ink">
+                    {s.value}
+                    {s.suffix && <span className="text-brand-gold">{s.suffix}</span>}
+                  </div>
+                  <p className="mt-2 text-xs leading-relaxed text-brand-brown-soft">{s.label}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
       {/* ============================ HISTÓRIA ============================ */}
       <section className="relative overflow-hidden bg-brand-brown px-5 py-20 text-brand-cream sm:py-28">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_15%_10%,rgba(190,42,44,0.30),transparent_55%)]" />
@@ -967,7 +1035,7 @@ function LandingPage() {
           </Reveal>
 
           <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {business.reviews.map((r, i) => (
+            {business.reviews.slice(0, 3).map((r, i) => (
               <Reveal key={`${r.name}-${i}`} delay={(i % 3) * 90} className="h-full">
                 <blockquote
                   className={`flex h-full flex-col rounded-3xl border border-brand-brown/10 bg-surface-card p-6 transition-all duration-300 hover:-translate-y-1 hover:rotate-0 hover:border-brand-red/20 hover:shadow-[0_16px_36px_-20px_rgba(46,27,18,0.3)] ${
