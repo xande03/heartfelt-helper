@@ -1230,6 +1230,25 @@ function LandingPage() {
         </div>
       </section>
 
+      {/* ============================ VERSÍCULO ============================ */}
+      <section
+        aria-label="Versículo bíblico"
+        className="border-t border-brand-brown/10 bg-surface px-5 py-16 sm:py-20"
+      >
+        <Reveal className="mx-auto max-w-3xl text-center">
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-sand">
+            <Wheat className="h-5.5 w-5.5 text-brand-gold" strokeWidth={1.6} />
+          </span>
+          <blockquote className="mt-6 font-display text-xl leading-snug font-medium text-brand-brown italic sm:text-2xl dark:text-ink">
+            “Eu sou o pão da vida; aquele que vem a mim não terá fome, e quem crê em mim nunca terá
+            sede.”
+          </blockquote>
+          <cite className="mt-5 block text-[11px] font-semibold tracking-[0.22em] text-brand-red uppercase not-italic">
+            João 6:35
+          </cite>
+        </Reveal>
+      </section>
+
       {/* ============================ RODAPÉ ============================ */}
       <footer className="border-t border-brand-brown/10 bg-surface px-5 py-14">
         <div className="mx-auto max-w-6xl">
