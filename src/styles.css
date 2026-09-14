@@ -71,23 +71,48 @@
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
 
-  --color-brand-red: #be2a2c;
-  --color-brand-red-dark: #8e1c1f;
-  --color-brand-red-soft: #f7e3e1;
+  /* Paleta da marca — valores por tema via :root / .dark (abaixo) */
+  --color-brand-red: var(--brand-red);
+  --color-brand-red-dark: var(--brand-red-dark);
+  --color-brand-red-soft: var(--brand-red-soft);
   --color-brand-cream: #fdf9f2;
-  --color-brand-sand: #f3e9d8;
-  --color-brand-brown: #2e1b12;
-  --color-brand-brown-soft: #5b4436;
-  --color-brand-gold: #c9962c;
-  --color-brand-gold-soft: #e8c777;
+  --color-brand-sand: var(--brand-sand);
+  --color-brand-brown: var(--brand-brown);
+  --color-brand-brown-soft: var(--brand-brown-soft);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-soft: var(--brand-gold-soft);
+
+  /* Superfícies da página (fundo e cartões) — têm valores próprios por tema.
+     NOTE: --color-brand-cream é literal de propósito: ele é usado como
+     COR DE TEXTO sobre as seções escuras, então nunca inverte. */
+  --color-surface: var(--surface);
+  --color-surface-card: var(--surface-card);
 
   /* Verde do WhatsApp (botões de pedido) */
   --color-whatsapp: #1db95c;
   --color-whatsapp-dark: #159c4d;
 }
 
+/* Texto principal sobre superfícies escuras (usado com dark:text-ink) */
+@theme {
+  --color-ink: #f5ecdf;
+}
+
 :root {
   --radius: 0.625rem;
+
+  /* Tema claro — paleta da marca */
+  --brand-red: #be2a2c;
+  --brand-red-dark: #8e1c1f;
+  --brand-red-soft: #f7e3e1;
+  --brand-sand: #f3e9d8;
+  --brand-brown: #2e1b12;
+  --brand-brown-soft: #5b4436;
+  --brand-gold: #c9962c;
+  --brand-gold-soft: #e8c777;
+  --surface: #fdf9f2;
+  --surface-card: #ffffff;
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
@@ -123,6 +148,18 @@
 }
 
 .dark {
+  /* Tema escuro — paleta da marca (mesmas variáveis, valores noturnos) */
+  --brand-red: #d84a4c;
+  --brand-red-dark: #b23436;
+  --brand-red-soft: #4a221c;
+  --brand-sand: #2b1d13;
+  --brand-brown: #0d0805;
+  --brand-brown-soft: #c9b29a;
+  --brand-gold: #d9a83e;
+  --brand-gold-soft: #e8c777;
+  --surface: #17100b;
+  --surface-card: #241a12;
+
   --background: oklch(0.129 0.042 264.695);
   --foreground: oklch(0.984 0.003 247.858);
   --card: oklch(0.208 0.042 265.755);
@@ -170,6 +207,37 @@
   html {
     scroll-behavior: smooth;
   }
+
+  :root {
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Tema escuro — ajustes pontuais                                       */
+/* O marrom escuro vira quase-preto no tema escuro; bordas, divisores e */
+/* anéis que o usam com transparência ficariam invisíveis, então são    */
+/* reposicionados para branco translúcido (CSS fora de camada vence as  */
+/* utilidades). As demais cores invertem sozinhas pelas variáveis.      */
+/* ------------------------------------------------------------------ */
+
+.dark .border-brand-brown\/5,
+.dark .border-brand-brown\/8,
+.dark .border-brand-brown\/10,
+.dark .border-brand-brown\/15 {
+  border-color: rgb(255 255 255 / 0.09);
+}
+
+.dark .divide-brand-brown\/8 > * {
+  border-color: rgb(255 255 255 / 0.08);
+}
+
+.dark .ring-brand-brown\/10 {
+  --tw-ring-color: rgb(255 255 255 / 0.14);
 }
 
 /* ------------------------------------------------------------------ */

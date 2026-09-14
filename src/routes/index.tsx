@@ -14,6 +14,7 @@ import {
   MapPin,
   Menu,
   MessageCircle,
+  Moon,
   Navigation,
   Phone,
   Quote,
@@ -21,6 +22,7 @@ import {
   ShoppingBasket,
   Sparkles,
   Star,
+  Sun,
   Wallet,
   Wheat,
   X,
@@ -82,7 +84,7 @@ function Stars({ value, className = "" }: { value: number; className?: string })
       {[0, 1, 2, 3, 4].map((i) => (
         <Star
           key={i}
-          className={`h-3.5 w-3.5 ${i < Math.round(value) ? "fill-brand-gold text-brand-gold" : "text-brand-brown/25"}`}
+          className={`h-3.5 w-3.5 ${i < Math.round(value) ? "fill-brand-gold text-brand-gold" : "text-brand-brown/25 dark:text-white/15"}`}
           strokeWidth={1.5}
         />
       ))}
@@ -95,7 +97,9 @@ function StatusPill({ status, dark = false }: { status: OpenStatus | null; dark?
   return (
     <span
       className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
-        dark ? "bg-white/10 text-brand-cream backdrop-blur-sm" : "bg-brand-sand text-brand-brown"
+        dark
+          ? "bg-white/10 text-brand-cream backdrop-blur-sm"
+          : "bg-brand-sand text-brand-brown dark:bg-white/10 dark:text-ink"
       }`}
     >
       <span className="relative flex h-2 w-2">
@@ -176,6 +180,7 @@ function LandingPage() {
   const [indicator, setIndicator] = useState({ left: 0, width: 0, visible: false });
   const navRef = useRef<HTMLElement>(null);
   const [lightbox, setLightbox] = useState<number | null>(null);
+  const [theme, setTheme] = useState<"light" | "dark" | null>(null);
 
   // Calculado no cliente para evitar divergência de hidratação (SSR × fuso)
   useEffect(() => {
@@ -266,12 +271,50 @@ function LandingPage() {
     };
   }, [lightbox]);
 
+  // Tema claro/escuro: aplica a classe .dark no <html> (o script inline
+  // já cuida do primeiro paint) e persiste a escolha do usuário.
+  useEffect(() => {
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem("bacanga-theme");
+    } catch {
+      stored = null;
+    }
+    const initial: "light" | "dark" =
+      stored === "dark" || stored === "light"
+        ? stored
+        : window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+    document.documentElement.classList.toggle("dark", initial === "dark");
+    setTheme(initial);
+  }, []);
+
+  const toggleTheme = () => {
+    const next: "light" | "dark" = theme === "dark" ? "light" : "dark";
+    document.documentElement.classList.toggle("dark", next === "dark");
+    try {
+      localStorage.setItem("bacanga-theme", next);
+    } catch {
+      /* storage indisponível — segue sem persistir */
+    }
+    setTheme(next);
+  };
+
   const todayIndex = status?.todayIndex ?? new Date().getDay();
 
   const lightboxItem = lightbox === null ? null : (business.gallery[lightbox] ?? null);
 
   return (
-    <div className="min-h-screen bg-brand-cream font-sans text-brand-brown antialiased selection:bg-brand-red selection:text-white">
+    <div className="min-h-screen bg-surface font-sans text-brand-brown antialiased selection:bg-brand-red selection:text-white dark:text-ink">
+      {/* Tema: aplica .dark no <html> antes do primeiro paint (evita flash) */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html:
+            'try{var t=localStorage.getItem("bacanga-theme");if(t==="dark"||(t!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}',
+        }}
+      />
+
       {/* Dados estruturados para o Google */}
       <script
         type="application/ld+json"
@@ -359,8 +402,8 @@ function LandingPage() {
           <div
             className={`flex items-center justify-between gap-3 rounded-full border px-3 py-2 backdrop-blur-xl transition-all duration-500 hover:-translate-y-[2px] ${
               scrolled
-                ? "border-brand-brown/10 bg-brand-cream/90 shadow-[0_18px_44px_-18px_rgba(46,27,18,0.5)]"
-                : "border-white/50 bg-brand-cream/75 shadow-[0_12px_34px_-18px_rgba(46,27,18,0.35)]"
+                ? "border-brand-brown/10 bg-surface/90 shadow-[0_18px_44px_-18px_rgba(46,27,18,0.5)]"
+                : "border-white/50 bg-surface/75 shadow-[0_12px_34px_-18px_rgba(46,27,18,0.35)]"
             }`}
           >
             {/* Logo + nome (condensa ao rolar) */}
@@ -423,7 +466,7 @@ function LandingPage() {
               {status && (
                 <span
                   title={status.detail ? `${status.label} · ${status.detail}` : status.label}
-                  className="hidden items-center gap-2 rounded-full bg-white/70 px-3 py-1.5 text-[11px] font-semibold text-brand-brown ring-1 ring-brand-brown/10 xl:flex"
+                  className="hidden items-center gap-2 rounded-full bg-white/70 px-3 py-1.5 text-[11px] font-semibold text-brand-brown ring-1 ring-brand-brown/10 xl:flex dark:bg-white/10 dark:text-ink"
                 >
                   <span className="relative flex h-2 w-2">
                     <span
@@ -452,10 +495,22 @@ function LandingPage() {
               </a>
               <button
                 type="button"
+                aria-label={theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"}
+                onClick={toggleTheme}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-brown/15 text-brand-brown transition-all hover:bg-white/60 active:scale-90 dark:text-ink dark:hover:bg-white/10"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4.5 w-4.5" strokeWidth={2} />
+                ) : (
+                  <Moon className="h-4.5 w-4.5" strokeWidth={2} />
+                )}
+              </button>
+              <button
+                type="button"
                 aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
                 aria-expanded={menuOpen}
                 onClick={() => setMenuOpen((v) => !v)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-brown/15 text-brand-brown transition-all active:scale-90 lg:hidden"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-brown/15 text-brand-brown transition-all active:scale-90 lg:hidden dark:text-ink"
               >
                 {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
@@ -465,7 +520,7 @@ function LandingPage() {
 
         {/* Menu mobile: card flutuante com entrada animada */}
         {menuOpen && (
-          <nav className="menu-pop absolute inset-x-0 top-full z-50 mx-auto mt-3 w-[min(92vw,26rem)] rounded-[1.75rem] border border-brand-brown/10 bg-brand-cream/95 p-3 shadow-2xl backdrop-blur-xl lg:hidden">
+          <nav className="menu-pop absolute inset-x-0 top-full z-50 mx-auto mt-3 w-[min(92vw,26rem)] rounded-[1.75rem] border border-brand-brown/10 bg-surface/95 p-3 shadow-2xl backdrop-blur-xl lg:hidden">
             {NAV_ITEMS.map((n) => (
               <a
                 key={n.href}
@@ -622,7 +677,7 @@ function LandingPage() {
       </section>
 
       {/* ============================ DESTAQUES ============================ */}
-      <section id="destaques" className="scroll-mt-20 bg-brand-cream px-5 py-20 sm:py-28">
+      <section id="destaques" className="scroll-mt-20 bg-surface px-5 py-20 sm:py-28">
         <div className="mx-auto max-w-6xl">
           <Reveal className="max-w-2xl">
             <SectionLabel>O que você encontra aqui</SectionLabel>
@@ -641,7 +696,7 @@ function LandingPage() {
               return (
                 <Reveal key={h.title} delay={i * 90} className="h-full">
                   <Tilt max={6} className="h-full">
-                    <article className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-brand-brown/10 bg-white p-6 transition-all duration-300 hover:border-brand-red/25 hover:shadow-[0_18px_40px_-18px_rgba(46,27,18,0.28)]">
+                    <article className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-brand-brown/10 bg-surface-card p-6 transition-all duration-300 hover:border-brand-red/25 hover:shadow-[0_18px_40px_-18px_rgba(46,27,18,0.28)]">
                       {/* Spotlight que segue o cursor (vars --mx/--my do Tilt) */}
                       <span
                         aria-hidden
@@ -678,7 +733,7 @@ function LandingPage() {
       {/* ============================ PRODUTOS ============================ */}
       <section
         id="produtos"
-        className="scroll-mt-20 border-t border-brand-brown/5 bg-white px-5 py-20 sm:py-28"
+        className="scroll-mt-20 border-t border-brand-brown/5 bg-surface-card px-5 py-20 sm:py-28"
       >
         <div className="mx-auto max-w-6xl">
           <Reveal className="max-w-2xl">
@@ -695,7 +750,7 @@ function LandingPage() {
           <div className="mt-14 grid gap-6 sm:grid-cols-2">
             {business.products.map((p, i) => (
               <Reveal key={p.title} delay={(i % 2) * 110} className="h-full">
-                <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-brand-brown/10 bg-white shadow-[0_10px_30px_-24px_rgba(46,27,18,0.4)] transition-all duration-300 hover:-translate-y-1.5 hover:border-brand-red/25 hover:shadow-[0_24px_50px_-22px_rgba(46,27,18,0.38)]">
+                <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-brand-brown/10 bg-surface-card shadow-[0_10px_30px_-24px_rgba(46,27,18,0.4)] transition-all duration-300 hover:-translate-y-1.5 hover:border-brand-red/25 hover:shadow-[0_24px_50px_-22px_rgba(46,27,18,0.38)]">
                   <div className="relative h-48 overflow-hidden sm:h-52">
                     <img
                       src={p.img}
@@ -704,7 +759,7 @@ function LandingPage() {
                       className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-brand-brown/55 via-transparent to-transparent" />
-                    <span className="absolute bottom-3 left-4 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold tracking-wide text-brand-brown uppercase backdrop-blur-sm">
+                    <span className="absolute bottom-3 left-4 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold tracking-wide text-brand-brown uppercase backdrop-blur-sm dark:bg-brand-brown/80 dark:text-ink">
                       <Sparkles className="h-3 w-3 text-brand-gold" />
                       {p.badge}
                     </span>
@@ -736,7 +791,7 @@ function LandingPage() {
           >
             <p className="text-sm text-brand-brown-soft">
               Fotos reais da nossa casa ·{" "}
-              <span className="font-semibold text-brand-brown">
+              <span className="font-semibold text-brand-brown dark:text-ink">
                 encomendas e novidades pelo WhatsApp
               </span>
             </p>
@@ -871,9 +926,9 @@ function LandingPage() {
                 className="-mt-[9%] h-[118%] w-full object-cover"
               />
             </Parallax>
-            <div className="animate-float absolute -bottom-6 -left-4 hidden max-w-[15rem] rounded-2xl bg-brand-cream p-5 shadow-xl sm:block lg:-left-10">
+            <div className="animate-float absolute -bottom-6 -left-4 hidden max-w-[15rem] rounded-2xl bg-surface p-5 shadow-xl sm:block lg:-left-10">
               <Quote className="h-5 w-5 text-brand-red" />
-              <p className="mt-2 font-display text-[15px] leading-snug font-medium text-brand-brown italic">
+              <p className="mt-2 font-display text-[15px] leading-snug font-medium text-brand-brown italic dark:text-ink">
                 “Frequento desde que eu era criança e a cada dia eles se superam.”
               </p>
               <p className="mt-3 text-[11px] font-semibold tracking-wider text-brand-brown-soft uppercase">
@@ -885,7 +940,7 @@ function LandingPage() {
       </section>
 
       {/* ============================ AVALIAÇÕES ============================ */}
-      <section id="avaliacoes" className="scroll-mt-20 bg-brand-cream px-5 py-20 sm:py-28">
+      <section id="avaliacoes" className="scroll-mt-20 bg-surface px-5 py-20 sm:py-28">
         <div className="mx-auto max-w-6xl">
           <Reveal className="flex flex-wrap items-end justify-between gap-8">
             <div className="max-w-xl">
@@ -895,7 +950,7 @@ function LandingPage() {
                 {business.rating.count} <span className="text-brand-red italic">avaliações.</span>
               </h2>
             </div>
-            <div className="rounded-2xl border border-brand-brown/10 bg-white px-6 py-5">
+            <div className="rounded-2xl border border-brand-brown/10 bg-surface-card px-6 py-5">
               <div className="flex items-center gap-4">
                 <div className="font-display text-5xl leading-none font-semibold text-brand-red">
                   {business.rating.value.toString().replace(".", ",")}
@@ -914,7 +969,7 @@ function LandingPage() {
             {business.reviews.map((r, i) => (
               <Reveal key={`${r.name}-${i}`} delay={(i % 3) * 90} className="h-full">
                 <blockquote
-                  className={`flex h-full flex-col rounded-3xl border border-brand-brown/10 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:rotate-0 hover:border-brand-red/20 hover:shadow-[0_16px_36px_-20px_rgba(46,27,18,0.3)] ${
+                  className={`flex h-full flex-col rounded-3xl border border-brand-brown/10 bg-surface-card p-6 transition-all duration-300 hover:-translate-y-1 hover:rotate-0 hover:border-brand-red/20 hover:shadow-[0_16px_36px_-20px_rgba(46,27,18,0.3)] ${
                     i % 2 === 0 ? "rotate-[0.6deg]" : "-rotate-[0.6deg]"
                   }`}
                 >
@@ -971,7 +1026,7 @@ function LandingPage() {
               <StatusPill status={status} />
             </div>
 
-            <div className="overflow-hidden rounded-3xl border border-brand-brown/10 bg-white">
+            <div className="overflow-hidden rounded-3xl border border-brand-brown/10 bg-surface-card">
               <ul className="divide-y divide-brand-brown/8">
                 {business.hours.map((h, i) => {
                   const isToday = i === todayIndex;
@@ -984,7 +1039,9 @@ function LandingPage() {
                     >
                       <span
                         className={`flex items-center gap-2 ${
-                          isToday ? "font-semibold text-brand-brown" : "text-brand-brown-soft"
+                          isToday
+                            ? "font-semibold text-brand-brown dark:text-ink"
+                            : "text-brand-brown-soft"
                         }`}
                       >
                         {isToday && <Clock className="h-3.5 w-3.5 text-brand-red" />}
@@ -997,7 +1054,9 @@ function LandingPage() {
                       </span>
                       <span
                         className={`text-right tabular-nums ${
-                          isToday ? "font-semibold text-brand-brown" : "text-brand-brown-soft"
+                          isToday
+                            ? "font-semibold text-brand-brown dark:text-ink"
+                            : "text-brand-brown-soft"
                         }`}
                       >
                         {formatSlots(h.slots)}
@@ -1015,7 +1074,7 @@ function LandingPage() {
           <Reveal delay={120}>
             <div className="mt-8 space-y-4">
               <div className="flex items-start gap-3.5">
-                <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-red ring-1 ring-brand-brown/10">
+                <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-card text-brand-red ring-1 ring-brand-brown/10">
                   <MapPin className="h-4.5 w-4.5" strokeWidth={2} />
                 </span>
                 <div className="text-sm leading-relaxed">
@@ -1032,7 +1091,7 @@ function LandingPage() {
               </div>
 
               <div className="flex items-start gap-3.5">
-                <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-red ring-1 ring-brand-brown/10">
+                <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-card text-brand-red ring-1 ring-brand-brown/10">
                   <Phone className="h-4.5 w-4.5" strokeWidth={2} />
                 </span>
                 <div className="text-sm leading-relaxed">
@@ -1044,7 +1103,7 @@ function LandingPage() {
               </div>
 
               <div className="flex items-start gap-3.5">
-                <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-red ring-1 ring-brand-brown/10">
+                <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-card text-brand-red ring-1 ring-brand-brown/10">
                   <Wallet className="h-4.5 w-4.5" strokeWidth={2} />
                 </span>
                 <div className="text-sm leading-relaxed">
@@ -1087,7 +1146,7 @@ function LandingPage() {
       </section>
 
       {/* ============================ INSTAGRAM / CTA ============================ */}
-      <section id="contato" className="scroll-mt-20 bg-brand-cream px-5 py-20 sm:py-24">
+      <section id="contato" className="scroll-mt-20 bg-surface px-5 py-20 sm:py-24">
         <div className="mx-auto max-w-6xl">
           <Reveal>
             <div className="relative overflow-hidden rounded-[2.5rem] bg-brand-red px-7 py-14 sm:px-14 sm:py-16">
@@ -1171,7 +1230,7 @@ function LandingPage() {
       </section>
 
       {/* ============================ RODAPÉ ============================ */}
-      <footer className="border-t border-brand-brown/10 bg-brand-cream px-5 py-14">
+      <footer className="border-t border-brand-brown/10 bg-surface px-5 py-14">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-2">
@@ -1202,7 +1261,7 @@ function LandingPage() {
             </div>
 
             <div>
-              <h3 className="text-[11px] font-semibold tracking-[0.18em] text-brand-brown uppercase">
+              <h3 className="text-[11px] font-semibold tracking-[0.18em] text-brand-brown uppercase dark:text-ink">
                 Endereço
               </h3>
               <address className="mt-4 space-y-1 text-sm leading-relaxed text-brand-brown-soft not-italic">
@@ -1216,7 +1275,7 @@ function LandingPage() {
             </div>
 
             <div>
-              <h3 className="text-[11px] font-semibold tracking-[0.18em] text-brand-brown uppercase">
+              <h3 className="text-[11px] font-semibold tracking-[0.18em] text-brand-brown uppercase dark:text-ink">
                 Contato
               </h3>
               <ul className="mt-4 space-y-2.5 text-sm text-brand-brown-soft">
