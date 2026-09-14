@@ -351,7 +351,7 @@ function LandingPage() {
               href={links.whatsappMsg}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden items-center gap-2 rounded-full bg-brand-red px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-red-dark hover:shadow-md sm:inline-flex"
+              className="hidden items-center gap-2 rounded-full bg-whatsapp px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-whatsapp-dark hover:shadow-md sm:inline-flex"
             >
               <MessageCircle className="h-4 w-4" strokeWidth={2.2} />
               Pedir no WhatsApp
@@ -383,7 +383,7 @@ function LandingPage() {
               href={links.whatsappMsg}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 flex items-center justify-center gap-2 rounded-full bg-brand-red px-4 py-3 text-sm font-semibold text-white"
+              className="mt-3 flex items-center justify-center gap-2 rounded-full bg-whatsapp px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-whatsapp-dark"
             >
               <MessageCircle className="h-4 w-4" /> Pedir no WhatsApp
             </a>
@@ -1163,7 +1163,7 @@ function LandingPage() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Falar no WhatsApp"
-        className="fixed right-5 bottom-5 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl shadow-black/20 transition-transform hover:scale-105 sm:hidden"
+        className="fixed right-5 bottom-5 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-whatsapp text-white shadow-xl shadow-black/20 transition-all hover:scale-105 hover:bg-whatsapp-dark sm:hidden"
       >
         <MessageCircle className="h-6 w-6" strokeWidth={2.2} />
       </a>
