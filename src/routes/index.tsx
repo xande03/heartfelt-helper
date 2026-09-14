@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -113,6 +113,15 @@ function StatusPill({ status, dark = false }: { status: OpenStatus | null; dark?
   );
 }
 
+/** Itens do menu (estáticos — nível de módulo para deps estáveis em effects). */
+const NAV_ITEMS = [
+  { href: "#destaques", label: "A casa" },
+  { href: "#vitrine", label: "Vitrine" },
+  { href: "#avaliacoes", label: "Avaliações" },
+  { href: "#horarios", label: "Horários" },
+  { href: "#contato", label: "Contato" },
+];
+
 /** Faixa "letreiro de padaria" — itens que saem do forno, rolando em loop. */
 const MARQUEE_ITEMS = [
   "Pão francês quentinho",
@@ -161,6 +170,10 @@ function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [pillOffset, setPillOffset] = useState(0);
+  const [active, setActive] = useState<string | null>(null);
+  const [indicator, setIndicator] = useState({ left: 0, width: 0, visible: false });
+  const navRef = useRef<HTMLElement>(null);
   const [lightbox, setLightbox] = useState<number | null>(null);
 
   // Calculado no cliente para evitar divergência de hidratação (SSR × fuso)
@@ -170,7 +183,7 @@ function LandingPage() {
     return () => clearInterval(t);
   }, []);
 
-  // Sombra sutil na nav + barra de progresso de leitura
+  // Nav: barra de progresso + parallax da ilha (segue o scroll com atraso)
   useEffect(() => {
     let raf = 0;
     const onScroll = () => {
@@ -181,6 +194,8 @@ function LandingPage() {
         const doc = document.documentElement;
         const max = doc.scrollHeight - window.innerHeight;
         setProgress(max > 0 ? Math.min(1, window.scrollY / max) : 0);
+        // A ilha "nada" alguns px acima conforme rola (transição dá o atraso)
+        setPillOffset(Math.max(-14, -window.scrollY * 0.05));
       });
     };
     onScroll();
@@ -192,6 +207,42 @@ function LandingPage() {
       if (raf) cancelAnimationFrame(raf);
     };
   }, []);
+
+  // Scroll-spy: marca a seção visível (a ilha destaca o grupo ativo)
+  useEffect(() => {
+    if (!("IntersectionObserver" in window)) return;
+    const ids = ["topo", ...NAV_ITEMS.map((n) => n.href.slice(1))];
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) setActive(e.target.id === "topo" ? null : `#${e.target.id}`);
+        }
+      },
+      { rootMargin: "-35% 0px -60% 0px" },
+    );
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    }
+    return () => io.disconnect();
+  }, []);
+
+  // Indicador deslizante: desloca a "pílula" até o link ativo
+  useEffect(() => {
+    const measure = () => {
+      const el = active
+        ? navRef.current?.querySelector<HTMLElement>(`[data-nav="${active}"]`)
+        : null;
+      if (!el) {
+        setIndicator({ left: 0, width: 0, visible: false });
+        return;
+      }
+      setIndicator({ left: el.offsetLeft, width: el.offsetWidth, visible: true });
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [active]);
 
   // Lightbox: teclado + trava de scroll
   useEffect(() => {
@@ -215,14 +266,6 @@ function LandingPage() {
   }, [lightbox]);
 
   const todayIndex = status?.todayIndex ?? new Date().getDay();
-
-  const nav = [
-    { href: "#destaques", label: "A casa" },
-    { href: "#vitrine", label: "Vitrine" },
-    { href: "#avaliacoes", label: "Avaliações" },
-    { href: "#horarios", label: "Horários" },
-    { href: "#contato", label: "Contato" },
-  ];
 
   const lightboxItem = lightbox === null ? null : (business.gallery[lightbox] ?? null);
 
@@ -299,82 +342,139 @@ function LandingPage() {
         </div>
       </div>
 
-      {/* ============================ NAV ============================ */}
-      <header
-        className={`sticky top-0 z-40 border-b border-brand-brown/10 backdrop-blur-md transition-shadow duration-300 ${
-          scrolled
-            ? "bg-brand-cream/95 shadow-[0_10px_30px_-16px_rgba(46,27,18,0.35)]"
-            : "bg-brand-cream/85"
-        }`}
-      >
-        {/* Barra de progresso de leitura */}
-        <span
-          aria-hidden
-          className="absolute bottom-0 left-0 h-[2.5px] rounded-r-full bg-gradient-to-r from-brand-red to-brand-gold"
-          style={{ width: `${progress * 100}%` }}
-        />
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
-          <a href="#topo" className="flex items-center gap-3">
-            <img
-              src="/images/logo.png"
-              alt={`Brasão ${business.name}`}
-              className="h-11 w-11 rounded-full object-cover ring-2 ring-brand-gold/50"
-            />
-            <span className="leading-none">
-              <span className="block font-display text-[15px] font-semibold tracking-tight sm:text-base">
-                Panificadora <span className="text-brand-red">Bacanga</span>
-              </span>
-              <span className="mt-0.5 block text-[10px] font-medium tracking-[0.18em] text-brand-brown-soft uppercase">
-                Conveniência · São Luís
-              </span>
-            </span>
-          </a>
-
-          <nav className="hidden items-center gap-7 text-sm font-medium lg:flex">
-            {nav.map((n) => (
-              <a
-                key={n.href}
-                href={n.href}
-                className="group relative text-brand-brown-soft transition-colors hover:text-brand-red"
-              >
-                {n.label}
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-x-0 -bottom-1.5 h-[2px] origin-left scale-x-0 rounded-full bg-brand-red transition-transform duration-300 ease-out group-hover:scale-x-100"
-                />
-              </a>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-2">
+      {/* ============================ NAV (ILHA-PÍLULA) ============================ */}
+      {/* Barra de progresso de leitura */}
+      <span
+        aria-hidden
+        className="fixed top-0 left-0 z-50 h-[3px] rounded-r-full bg-gradient-to-r from-brand-red to-brand-gold"
+        style={{ width: `${progress * 100}%` }}
+      />
+      <header className="sticky top-3 z-40 mx-auto w-full max-w-6xl px-4 sm:px-5">
+        {/* Parallax: a ilha se move alguns px com atraso em relação ao scroll */}
+        <div
+          className="mx-auto w-fit will-change-transform transition-transform duration-700 ease-out"
+          style={{ transform: `translateY(${pillOffset}px)` }}
+        >
+          <div
+            className={`flex items-center justify-between gap-3 rounded-full border px-3 py-2 backdrop-blur-xl transition-all duration-500 hover:-translate-y-[2px] ${
+              scrolled
+                ? "border-brand-brown/10 bg-brand-cream/90 shadow-[0_18px_44px_-18px_rgba(46,27,18,0.5)]"
+                : "border-white/50 bg-brand-cream/75 shadow-[0_12px_34px_-18px_rgba(46,27,18,0.35)]"
+            }`}
+          >
+            {/* Logo + nome (condensa ao rolar) */}
             <a
-              href={links.whatsappMsg}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden items-center gap-2 rounded-full bg-whatsapp px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-whatsapp-dark hover:shadow-md sm:inline-flex"
+              href="#topo"
+              className="flex shrink-0 items-center gap-2.5 rounded-full pl-1 pr-2 transition-all duration-500"
             >
-              <MessageCircle className="h-4 w-4" strokeWidth={2.2} />
-              Pedir no WhatsApp
+              <img
+                src="/images/logo.png"
+                alt={`Brasão ${business.name}`}
+                className={`rounded-full object-cover ring-2 ring-brand-gold/50 transition-all duration-500 ${
+                  scrolled ? "h-9 w-9" : "h-11 w-11"
+                }`}
+              />
+              <span className="leading-none">
+                <span
+                  className={`block font-display font-semibold tracking-tight transition-all duration-500 ${
+                    scrolled ? "text-[13px]" : "text-[15px] sm:text-base"
+                  }`}
+                >
+                  Panificadora <span className="text-brand-red">Bacanga</span>
+                </span>
+                <span
+                  className={`mt-0.5 block text-[9px] font-medium tracking-[0.18em] text-brand-brown-soft uppercase transition-opacity duration-500 ${
+                    scrolled ? "opacity-40" : "opacity-100"
+                  }`}
+                >
+                  Conveniência · São Luís
+                </span>
+              </span>
             </a>
-            <button
-              type="button"
-              aria-label="Abrir menu"
-              onClick={() => setMenuOpen((v) => !v)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-brown/15 text-brand-brown lg:hidden"
-            >
-              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+
+            {/* Links agrupados + indicador deslizante (scroll-spy) */}
+            <nav ref={navRef} className="relative hidden items-center gap-1 p-1 lg:flex">
+              <span
+                aria-hidden
+                className={`absolute top-1 bottom-1 rounded-full bg-brand-red-soft transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                  indicator.visible ? "opacity-100" : "opacity-0"
+                }`}
+                style={{ left: indicator.left, width: indicator.width }}
+              />
+              {NAV_ITEMS.map((n) => (
+                <a
+                  key={n.href}
+                  href={n.href}
+                  data-nav={n.href}
+                  className={`relative z-10 rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-300 ${
+                    active === n.href
+                      ? "text-brand-red"
+                      : "text-brand-brown-soft hover:text-brand-red"
+                  }`}
+                >
+                  {n.label}
+                </a>
+              ))}
+            </nav>
+
+            <div className="flex shrink-0 items-center gap-2">
+              {/* Status ao vivo, agrupado na ilha */}
+              {status && (
+                <span
+                  title={status.detail ? `${status.label} · ${status.detail}` : status.label}
+                  className="hidden items-center gap-2 rounded-full bg-white/70 px-3 py-1.5 text-[11px] font-semibold text-brand-brown ring-1 ring-brand-brown/10 xl:flex"
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span
+                      className={`absolute inline-flex h-full w-full animate-ping rounded-full ${
+                        status.open ? "bg-emerald-400" : "bg-brand-red"
+                      } opacity-70`}
+                    />
+                    <span
+                      className={`relative inline-flex h-2 w-2 rounded-full ${
+                        status.open ? "bg-emerald-500" : "bg-brand-red"
+                      }`}
+                    />
+                  </span>
+                  {status.open ? "Aberto agora" : "Fechado"}
+                </span>
+              )}
+
+              <a
+                href={links.whatsappMsg}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden items-center gap-2 rounded-full bg-whatsapp px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:bg-whatsapp-dark hover:shadow-md active:scale-95 sm:inline-flex"
+              >
+                <MessageCircle className="h-4 w-4" strokeWidth={2.2} />
+                Pedir no WhatsApp
+              </a>
+              <button
+                type="button"
+                aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+                aria-expanded={menuOpen}
+                onClick={() => setMenuOpen((v) => !v)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-brown/15 text-brand-brown transition-all active:scale-90 lg:hidden"
+              >
+                {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+            </div>
           </div>
         </div>
 
+        {/* Menu mobile: card flutuante com entrada animada */}
         {menuOpen && (
-          <nav className="border-t border-brand-brown/10 bg-brand-cream px-5 py-3 lg:hidden">
-            {nav.map((n) => (
+          <nav className="menu-pop absolute inset-x-0 top-full z-50 mx-auto mt-3 w-[min(92vw,26rem)] rounded-[1.75rem] border border-brand-brown/10 bg-brand-cream/95 p-3 shadow-2xl backdrop-blur-xl lg:hidden">
+            {NAV_ITEMS.map((n) => (
               <a
                 key={n.href}
                 href={n.href}
                 onClick={() => setMenuOpen(false)}
-                className="block border-b border-brand-brown/5 py-3 text-sm font-medium text-brand-brown-soft last:border-0"
+                className={`block rounded-full px-4 py-3 text-sm font-medium transition-colors ${
+                  active === n.href
+                    ? "bg-brand-red-soft text-brand-red"
+                    : "text-brand-brown-soft hover:bg-brand-sand"
+                }`}
               >
                 {n.label}
               </a>
@@ -383,7 +483,7 @@ function LandingPage() {
               href={links.whatsappMsg}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 flex items-center justify-center gap-2 rounded-full bg-whatsapp px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-whatsapp-dark"
+              className="mt-2 flex items-center justify-center gap-2 rounded-full bg-whatsapp px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-whatsapp-dark active:scale-[0.98]"
             >
               <MessageCircle className="h-4 w-4" /> Pedir no WhatsApp
             </a>
