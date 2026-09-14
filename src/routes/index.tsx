@@ -195,7 +195,7 @@ function LandingPage() {
         const max = doc.scrollHeight - window.innerHeight;
         setProgress(max > 0 ? Math.min(1, window.scrollY / max) : 0);
         // A ilha "nada" alguns px acima conforme rola (transição dá o atraso)
-        setPillOffset(Math.max(-14, -window.scrollY * 0.05));
+        setPillOffset(Math.max(-10, -window.scrollY * 0.04));
       });
     };
     onScroll();
@@ -349,7 +349,7 @@ function LandingPage() {
         className="fixed top-0 left-0 z-50 h-[3px] rounded-r-full bg-gradient-to-r from-brand-red to-brand-gold"
         style={{ width: `${progress * 100}%` }}
       />
-      <header className="sticky top-3 z-40 mx-auto w-full max-w-6xl px-4 sm:px-5">
+      <header className="sticky top-6 z-40 mx-auto w-full max-w-6xl px-4 sm:px-5">
         {/* Parallax: a ilha se move alguns px com atraso em relação ao scroll */}
         <div
           className="mx-auto w-fit will-change-transform transition-transform duration-700 ease-out"
