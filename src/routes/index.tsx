@@ -4,6 +4,8 @@ import {
   ArrowUpRight,
   BadgeCheck,
   Cake,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Coffee,
   Facebook,
@@ -24,6 +26,7 @@ import {
   X,
 } from "lucide-react";
 
+import { Reveal } from "../components/reveal";
 import { business, formatSlots, getOpenStatus, links, type OpenStatus } from "../lib/business";
 
 export const Route = createFileRoute("/")({
@@ -110,6 +113,45 @@ function StatusPill({ status, dark = false }: { status: OpenStatus | null; dark?
   );
 }
 
+/** Faixa "letreiro de padaria" — itens que saem do forno, rolando em loop. */
+const MARQUEE_ITEMS = [
+  "Pão francês quentinho",
+  "Bomba da casa",
+  "Pastel folheado",
+  "Queijadinha",
+  "Petit four de cebola",
+  "Donuts",
+  "Café passado na hora",
+  "Sucos e refrigerantes",
+  "Bolos e confeitaria",
+  "Conveniência completa",
+];
+
+function Marquee() {
+  return (
+    <div
+      aria-hidden="true"
+      className="marquee overflow-hidden border-y border-white/10 bg-brand-red py-3"
+    >
+      <div className="marquee-track flex w-max items-center gap-9">
+        {[0, 1].map((dup) => (
+          <div key={dup} className="flex items-center gap-9">
+            {MARQUEE_ITEMS.map((item) => (
+              <span
+                key={item}
+                className="flex items-center gap-9 text-[12px] font-semibold tracking-[0.18em] whitespace-nowrap text-brand-cream uppercase"
+              >
+                {item}
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-gold" />
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /* Página                                                              */
 /* ------------------------------------------------------------------ */
@@ -117,6 +159,8 @@ function StatusPill({ status, dark = false }: { status: OpenStatus | null; dark?
 function LandingPage() {
   const [status, setStatus] = useState<OpenStatus | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [lightbox, setLightbox] = useState<number | null>(null);
 
   // Calculado no cliente para evitar divergência de hidratação (SSR × fuso)
   useEffect(() => {
@@ -124,6 +168,35 @@ function LandingPage() {
     const t = setInterval(() => setStatus(getOpenStatus()), 60_000);
     return () => clearInterval(t);
   }, []);
+
+  // Sombra sutil na nav depois de rolar
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Lightbox: teclado + trava de scroll
+  useEffect(() => {
+    if (lightbox === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightbox(null);
+      if (e.key === "ArrowRight")
+        setLightbox((v) => (v === null ? v : (v + 1) % business.gallery.length));
+      if (e.key === "ArrowLeft")
+        setLightbox((v) =>
+          v === null ? v : (v - 1 + business.gallery.length) % business.gallery.length,
+        );
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [lightbox]);
 
   const todayIndex = status?.todayIndex ?? new Date().getDay();
 
@@ -134,6 +207,8 @@ function LandingPage() {
     { href: "#horarios", label: "Horários" },
     { href: "#contato", label: "Contato" },
   ];
+
+  const lightboxItem = lightbox === null ? null : (business.gallery[lightbox] ?? null);
 
   return (
     <div className="min-h-screen bg-brand-cream font-sans text-brand-brown antialiased selection:bg-brand-red selection:text-white">
@@ -209,7 +284,13 @@ function LandingPage() {
       </div>
 
       {/* ============================ NAV ============================ */}
-      <header className="sticky top-0 z-40 border-b border-brand-brown/10 bg-brand-cream/85 backdrop-blur-md">
+      <header
+        className={`sticky top-0 z-40 border-b border-brand-brown/10 backdrop-blur-md transition-shadow duration-300 ${
+          scrolled
+            ? "bg-brand-cream/95 shadow-[0_10px_30px_-16px_rgba(46,27,18,0.35)]"
+            : "bg-brand-cream/85"
+        }`}
+      >
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
           <a href="#topo" className="flex items-center gap-3">
             <img
@@ -232,9 +313,13 @@ function LandingPage() {
               <a
                 key={n.href}
                 href={n.href}
-                className="relative text-brand-brown-soft transition-colors hover:text-brand-red"
+                className="group relative text-brand-brown-soft transition-colors hover:text-brand-red"
               >
                 {n.label}
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-x-0 -bottom-1.5 h-[2px] origin-left scale-x-0 rounded-full bg-brand-red transition-transform duration-300 ease-out group-hover:scale-x-100"
+                />
               </a>
             ))}
           </nav>
@@ -289,83 +374,100 @@ function LandingPage() {
         <img
           src="/images/fachada-hero.jpg"
           alt={`Fachada da ${business.name} na Rua da Felicidade, Vila Bacanga`}
+          fetchPriority="high"
           className="absolute inset-0 h-full w-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-brand-brown/85 via-brand-brown/70 to-brand-brown/95" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_20%,rgba(201,150,44,0.22),transparent_55%)]" />
+        <div className="bg-noise pointer-events-none absolute inset-0 opacity-[0.05] mix-blend-overlay" />
 
         <div className="relative mx-auto max-w-6xl px-5 pt-16 pb-14 sm:pt-24 sm:pb-20">
           <div className="max-w-3xl">
-            <div className="mb-6 flex flex-wrap items-center gap-3">
-              <StatusPill status={status} dark />
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-brand-cream backdrop-blur-sm">
-                <Sparkles className="h-3.5 w-3.5 text-brand-gold" />
-                Desde sempre na Vila Bacanga
-              </span>
-            </div>
+            <Reveal animateOnMount delay={0}>
+              <div className="mb-6 flex flex-wrap items-center gap-3">
+                <StatusPill status={status} dark />
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold text-brand-cream backdrop-blur-sm">
+                  <Sparkles className="h-3.5 w-3.5 text-brand-gold" />
+                  Desde sempre na Vila Bacanga
+                </span>
+              </div>
+            </Reveal>
 
-            <h1 className="font-display text-[2.6rem] leading-[1.03] font-semibold tracking-[-0.02em] text-white sm:text-6xl lg:text-[4.6rem]">
-              O pão quentinho
-              <span className="block text-brand-gold italic">sai do forno todo dia.</span>
-            </h1>
+            <Reveal animateOnMount delay={120}>
+              <h1 className="font-display text-[2.6rem] leading-[1.03] font-semibold tracking-[-0.02em] text-white sm:text-6xl lg:text-[4.6rem]">
+                O pão quentinho
+                <span className="block text-brand-gold italic">sai do forno todo dia.</span>
+              </h1>
+            </Reveal>
 
-            <p className="mt-6 max-w-2xl text-base leading-relaxed text-brand-cream/80 sm:text-lg">
-              {business.description}
-            </p>
+            <Reveal animateOnMount delay={240}>
+              <p className="mt-6 max-w-2xl text-base leading-relaxed text-brand-cream/80 sm:text-lg">
+                {business.description}
+              </p>
+            </Reveal>
 
-            <div className="mt-9 flex flex-wrap items-center gap-3">
-              <a
-                href={links.whatsappMsg}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2.5 rounded-full bg-brand-red px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-red/25 transition-all hover:-translate-y-0.5 hover:bg-brand-red-dark sm:text-base"
-              >
-                <MessageCircle className="h-5 w-5" strokeWidth={2.2} />
-                Fazer meu pedido
-                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </a>
-              <a
-                href={links.directions}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 rounded-full border border-brand-cream/30 bg-white/5 px-6 py-3.5 text-sm font-semibold text-brand-cream backdrop-blur-sm transition-colors hover:bg-white/15 sm:text-base"
-              >
-                <Navigation className="h-4.5 w-4.5" strokeWidth={2} />
-                Como chegar
-              </a>
-            </div>
+            <Reveal animateOnMount delay={340}>
+              <div className="mt-9 flex flex-wrap items-center gap-3">
+                <a
+                  href={links.whatsappMsg}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center gap-2.5 rounded-full bg-brand-red px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-red/25 transition-all hover:-translate-y-0.5 hover:bg-brand-red-dark sm:text-base"
+                >
+                  <MessageCircle className="h-5 w-5" strokeWidth={2.2} />
+                  Fazer meu pedido
+                  <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </a>
+                <a
+                  href={links.directions}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2.5 rounded-full border border-brand-cream/30 bg-white/5 px-6 py-3.5 text-sm font-semibold text-brand-cream backdrop-blur-sm transition-colors hover:bg-white/15 sm:text-base"
+                >
+                  <Navigation className="h-4.5 w-4.5" strokeWidth={2} />
+                  Como chegar
+                </a>
+              </div>
+            </Reveal>
 
-            <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-5 border-t border-white/15 pt-7">
-              <div className="flex items-center gap-3">
-                <div className="font-display text-3xl font-semibold text-white">
-                  {business.rating.value.toString().replace(".", ",")}
+            <Reveal animateOnMount delay={460}>
+              <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-5 border-t border-white/15 pt-7">
+                <div className="flex items-center gap-3">
+                  <div className="font-display text-3xl font-semibold text-white">
+                    {business.rating.value.toString().replace(".", ",")}
+                  </div>
+                  <div>
+                    <Stars value={business.rating.value} />
+                    <p className="mt-1 text-[11px] text-brand-cream/60">
+                      {business.rating.count} avaliações no Google
+                    </p>
+                  </div>
                 </div>
+                <div className="hidden h-10 w-px bg-white/15 sm:block" />
                 <div>
-                  <Stars value={business.rating.value} />
+                  <div className="font-display text-3xl font-semibold text-white">
+                    #{business.ranking.position}
+                  </div>
                   <p className="mt-1 text-[11px] text-brand-cream/60">
-                    {business.rating.count} avaliações no Google
+                    de {business.ranking.total.toLocaleString("pt-BR")} lugares para comer em{" "}
+                    {business.ranking.city}
+                  </p>
+                </div>
+                <div className="hidden h-10 w-px bg-white/15 sm:block" />
+                <div>
+                  <div className="font-display text-3xl font-semibold text-white">05:45</div>
+                  <p className="mt-1 text-[11px] text-brand-cream/60">
+                    abrimos de segunda a sábado
                   </p>
                 </div>
               </div>
-              <div className="hidden h-10 w-px bg-white/15 sm:block" />
-              <div>
-                <div className="font-display text-3xl font-semibold text-white">
-                  #{business.ranking.position}
-                </div>
-                <p className="mt-1 text-[11px] text-brand-cream/60">
-                  de {business.ranking.total.toLocaleString("pt-BR")} lugares para comer em{" "}
-                  {business.ranking.city}
-                </p>
-              </div>
-              <div className="hidden h-10 w-px bg-white/15 sm:block" />
-              <div>
-                <div className="font-display text-3xl font-semibold text-white">05:45</div>
-                <p className="mt-1 text-[11px] text-brand-cream/60">abrimos de segunda a sábado</p>
-              </div>
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
+
+      {/* ========================= LETREIRO / MARQUEE ========================= */}
+      <Marquee />
 
       {/* ========================= FAIXA DE VANTAGENS ========================= */}
       <section className="border-b border-brand-brown/10 bg-brand-sand">
@@ -387,42 +489,42 @@ function LandingPage() {
       {/* ============================ DESTAQUES ============================ */}
       <section id="destaques" className="scroll-mt-20 bg-brand-cream px-5 py-20 sm:py-28">
         <div className="mx-auto max-w-6xl">
-          <div className="max-w-2xl">
+          <Reveal className="max-w-2xl">
             <SectionLabel>O que você encontra aqui</SectionLabel>
             <h2 className="font-display text-3xl leading-tight font-semibold tracking-tight sm:text-[2.75rem]">
-              Uma padaria, uma conveniência e o seu café de todo dia.
+              Uma padaria, uma conveniência e o seu{" "}
+              <span className="text-brand-red italic">café de todo dia.</span>
             </h2>
             <p className="mt-5 text-[15px] leading-relaxed text-brand-brown-soft sm:text-base">
               {business.about}
             </p>
-          </div>
+          </Reveal>
 
           <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {business.highlights.map((h) => {
+            {business.highlights.map((h, i) => {
               const Icon = HIGHLIGHT_ICONS[h.icon as keyof typeof HIGHLIGHT_ICONS] ?? Wheat;
               return (
-                <article
-                  key={h.title}
-                  className="group flex flex-col rounded-3xl border border-brand-brown/10 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-red/25 hover:shadow-[0_18px_40px_-18px_rgba(46,27,18,0.28)]"
-                >
-                  <span className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-red-soft text-brand-red transition-colors group-hover:bg-brand-red group-hover:text-white">
-                    <Icon className="h-6 w-6" strokeWidth={1.8} />
-                  </span>
-                  <h3 className="font-display text-xl font-semibold tracking-tight">{h.title}</h3>
-                  <p className="mt-2.5 flex-1 text-sm leading-relaxed text-brand-brown-soft">
-                    {h.text}
-                  </p>
-                  <ul className="mt-5 flex flex-wrap gap-1.5">
-                    {h.tags.map((t) => (
-                      <li
-                        key={t}
-                        className="rounded-full bg-brand-sand px-2.5 py-1 text-[11px] font-medium text-brand-brown-soft"
-                      >
-                        {t}
-                      </li>
-                    ))}
-                  </ul>
-                </article>
+                <Reveal key={h.title} delay={i * 90} className="h-full">
+                  <article className="group flex h-full flex-col rounded-3xl border border-brand-brown/10 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-red/25 hover:shadow-[0_18px_40px_-18px_rgba(46,27,18,0.28)]">
+                    <span className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-red-soft text-brand-red transition-all duration-300 group-hover:-rotate-6 group-hover:scale-105 group-hover:bg-brand-red group-hover:text-white">
+                      <Icon className="h-6 w-6" strokeWidth={1.8} />
+                    </span>
+                    <h3 className="font-display text-xl font-semibold tracking-tight">{h.title}</h3>
+                    <p className="mt-2.5 flex-1 text-sm leading-relaxed text-brand-brown-soft">
+                      {h.text}
+                    </p>
+                    <ul className="mt-5 flex flex-wrap gap-1.5">
+                      {h.tags.map((t) => (
+                        <li
+                          key={t}
+                          className="rounded-full bg-brand-sand px-2.5 py-1 text-[11px] font-medium text-brand-brown-soft"
+                        >
+                          {t}
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                </Reveal>
               );
             })}
           </div>
@@ -432,11 +534,12 @@ function LandingPage() {
       {/* ============================ VITRINE ============================ */}
       <section id="vitrine" className="scroll-mt-20 bg-brand-sand px-5 py-20 sm:py-28">
         <div className="mx-auto max-w-6xl">
-          <div className="flex flex-wrap items-end justify-between gap-6">
+          <Reveal className="flex flex-wrap items-end justify-between gap-6">
             <div className="max-w-xl">
               <SectionLabel>A vitrine de hoje</SectionLabel>
               <h2 className="font-display text-3xl leading-tight font-semibold tracking-tight sm:text-[2.75rem]">
-                Fotos da nossa casa, do balcão e do forno.
+                Fotos da nossa casa, do balcão e do{" "}
+                <span className="text-brand-red italic">forno.</span>
               </h2>
             </div>
             <a
@@ -448,31 +551,36 @@ function LandingPage() {
               Ver mais fotos no Google
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </a>
-          </div>
+          </Reveal>
 
           <div className="mt-12 grid auto-rows-[210px] grid-cols-2 gap-4 sm:auto-rows-[250px] lg:grid-cols-4">
             {business.gallery.map((g, i) => (
-              <figure
+              <Reveal
                 key={g.src}
-                className={`group relative overflow-hidden rounded-3xl bg-brand-brown/5 ${
-                  g.span === "big"
-                    ? "col-span-2 row-span-2"
-                    : g.span === "wide"
-                      ? "col-span-2 lg:col-span-2"
-                      : ""
-                }`}
+                delay={(i % 4) * 70}
+                className={
+                  g.span === "big" ? "col-span-2 row-span-2" : g.span === "wide" ? "col-span-2" : ""
+                }
               >
-                <img
-                  src={g.src}
-                  alt={g.alt}
-                  loading={i < 2 ? "eager" : "lazy"}
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-brown/75 via-brand-brown/10 to-transparent opacity-90" />
-                <figcaption className="absolute bottom-0 left-0 px-5 py-4 font-display text-base font-medium text-white sm:text-lg">
-                  {g.label}
-                </figcaption>
-              </figure>
+                <figure
+                  className="group relative h-full cursor-zoom-in overflow-hidden rounded-3xl bg-brand-brown/5"
+                  onClick={() => setLightbox(i)}
+                >
+                  <img
+                    src={g.src}
+                    alt={g.alt}
+                    loading={i < 2 ? "eager" : "lazy"}
+                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-brown/75 via-brand-brown/10 to-transparent opacity-90" />
+                  <figcaption className="absolute bottom-0 left-0 px-5 py-4 font-display text-base font-medium text-white sm:text-lg">
+                    {g.label}
+                  </figcaption>
+                  <span className="absolute top-4 right-4 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/15 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
+                    <ArrowUpRight className="h-4 w-4 text-white" />
+                  </span>
+                </figure>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -481,14 +589,16 @@ function LandingPage() {
       {/* ============================ HISTÓRIA ============================ */}
       <section className="relative overflow-hidden bg-brand-brown px-5 py-20 text-brand-cream sm:py-28">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_15%_10%,rgba(190,42,44,0.30),transparent_55%)]" />
+        <div className="bg-noise pointer-events-none absolute inset-0 opacity-[0.05] mix-blend-overlay" />
         <div className="relative mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-2 lg:gap-20">
-          <div>
+          <Reveal>
             <p className="mb-3 flex items-center gap-2.5 text-[11px] font-semibold tracking-[0.22em] text-brand-gold uppercase">
               <span className="h-px w-8 bg-brand-gold/40" />
               Nossa história
             </p>
             <h2 className="font-display text-3xl leading-tight font-semibold tracking-tight text-white sm:text-[2.75rem]">
-              Um pedaço da Vila Bacanga que virou tradição.
+              Um pedaço da Vila Bacanga que virou{" "}
+              <span className="text-brand-gold italic">tradição.</span>
             </h2>
             <p className="mt-6 text-[15px] leading-relaxed text-brand-cream/75 sm:text-base">
               Quem passa pela Rua da Felicidade, ao lado do Mateus Supermercado, sente o cheiro
@@ -525,9 +635,9 @@ function LandingPage() {
                 <dd className="mt-1 font-display text-xl font-semibold text-white">~15 min</dd>
               </div>
             </dl>
-          </div>
+          </Reveal>
 
-          <div className="relative">
+          <Reveal delay={140} className="relative">
             <div className="overflow-hidden rounded-[2rem] border border-white/10 shadow-2xl">
               <img
                 src="/images/rua-do-bairro.jpg"
@@ -545,19 +655,19 @@ function LandingPage() {
                 Suenelima · Google
               </p>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ============================ AVALIAÇÕES ============================ */}
       <section id="avaliacoes" className="scroll-mt-20 bg-brand-cream px-5 py-20 sm:py-28">
         <div className="mx-auto max-w-6xl">
-          <div className="flex flex-wrap items-end justify-between gap-8">
+          <Reveal className="flex flex-wrap items-end justify-between gap-8">
             <div className="max-w-xl">
               <SectionLabel>Quem já provou</SectionLabel>
               <h2 className="font-display text-3xl leading-tight font-semibold tracking-tight sm:text-[2.75rem]">
                 {business.rating.value.toString().replace(".", ",")} estrelas em{" "}
-                {business.rating.count} avaliações.
+                {business.rating.count} <span className="text-brand-red italic">avaliações.</span>
               </h2>
             </div>
             <div className="rounded-2xl border border-brand-brown/10 bg-white px-6 py-5">
@@ -573,36 +683,35 @@ function LandingPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </Reveal>
 
           <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {business.reviews.map((r, i) => (
-              <blockquote
-                key={`${r.name}-${i}`}
-                className="flex flex-col rounded-3xl border border-brand-brown/10 bg-white p-6"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <Stars value={r.stars} />
-                  {r.badge && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold tracking-wide text-brand-brown-soft/70 uppercase">
-                      <BadgeCheck className="h-3.5 w-3.5" />
-                      {r.badge}
+              <Reveal key={`${r.name}-${i}`} delay={(i % 3) * 90} className="h-full">
+                <blockquote className="flex h-full flex-col rounded-3xl border border-brand-brown/10 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-brand-red/20 hover:shadow-[0_16px_36px_-20px_rgba(46,27,18,0.3)]">
+                  <div className="flex items-center justify-between gap-3">
+                    <Stars value={r.stars} />
+                    {r.badge && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold tracking-wide text-brand-brown-soft/70 uppercase">
+                        <BadgeCheck className="h-3.5 w-3.5" />
+                        {r.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-4 flex-1 text-sm leading-relaxed text-brand-brown-soft">
+                    “{r.text}”
+                  </p>
+                  <footer className="mt-5 flex items-center gap-3 border-t border-brand-brown/8 pt-4">
+                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-red-soft font-display text-sm font-semibold text-brand-red">
+                      {r.name.charAt(0)}
                     </span>
-                  )}
-                </div>
-                <p className="mt-4 flex-1 text-sm leading-relaxed text-brand-brown-soft">
-                  “{r.text}”
-                </p>
-                <footer className="mt-5 flex items-center gap-3 border-t border-brand-brown/8 pt-4">
-                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-red-soft font-display text-sm font-semibold text-brand-red">
-                    {r.name.charAt(0)}
-                  </span>
-                  <span>
-                    <cite className="block text-[13px] font-semibold not-italic">{r.name}</cite>
-                    <span className="text-[11px] text-brand-brown-soft/70">{r.when}</span>
-                  </span>
-                </footer>
-              </blockquote>
+                    <span>
+                      <cite className="block text-[13px] font-semibold not-italic">{r.name}</cite>
+                      <span className="text-[11px] text-brand-brown-soft/70">{r.when}</span>
+                    </span>
+                  </footer>
+                </blockquote>
+              </Reveal>
             ))}
           </div>
 
@@ -623,10 +732,10 @@ function LandingPage() {
       {/* ============================ HORÁRIOS ============================ */}
       <section id="horarios" className="scroll-mt-20 bg-brand-sand px-5 py-20 sm:py-28">
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
-          <div>
+          <Reveal>
             <SectionLabel>Horários & localização</SectionLabel>
             <h2 className="font-display text-3xl leading-tight font-semibold tracking-tight sm:text-[2.75rem]">
-              Estamos pertinho de você.
+              Estamos <span className="text-brand-red italic">pertinho</span> de você.
             </h2>
 
             <div className="mt-8 mb-6">
@@ -672,7 +781,9 @@ function LandingPage() {
             <p className="mt-3 text-xs text-brand-brown-soft/80">
               {business.priceRange} · Pico de movimento das 05h às 13h
             </p>
+          </Reveal>
 
+          <Reveal delay={120}>
             <div className="mt-8 space-y-4">
               <div className="flex items-start gap-3.5">
                 <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-brand-red ring-1 ring-brand-brown/10">
@@ -713,9 +824,9 @@ function LandingPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </Reveal>
 
-          <div className="flex flex-col gap-5">
+          <Reveal delay={160} className="flex h-full flex-col gap-5">
             <div className="relative flex-1 overflow-hidden rounded-[2rem] border border-brand-brown/10 bg-brand-brown/5 shadow-sm">
               {/* Foto real como plano de fundo — garante algo visível caso o mapa não carregue */}
               <img
@@ -742,87 +853,90 @@ function LandingPage() {
               <Navigation className="h-4.5 w-4.5" strokeWidth={2} />
               Traçar rota até a Bacanga
             </a>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ============================ INSTAGRAM / CTA ============================ */}
       <section id="contato" className="scroll-mt-20 bg-brand-cream px-5 py-20 sm:py-24">
         <div className="mx-auto max-w-6xl">
-          <div className="relative overflow-hidden rounded-[2.5rem] bg-brand-red px-7 py-14 sm:px-14 sm:py-16">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_15%,rgba(201,150,44,0.35),transparent_55%)]" />
-            <div className="relative grid items-center gap-10 lg:grid-cols-[1.4fr_1fr]">
-              <div>
-                <p className="mb-3 flex items-center gap-2.5 text-[11px] font-semibold tracking-[0.22em] text-white/70 uppercase">
-                  <span className="h-px w-8 bg-white/40" />
-                  Siga e peça
-                </p>
-                <h2 className="font-display text-3xl leading-tight font-semibold tracking-tight text-white sm:text-[2.6rem]">
-                  Pão fresquinho todos os dias — acompanhe no Instagram.
-                </h2>
-                <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-white/80">
-                  Novidades da vitrine, quitutes do dia e encomendas pelo WhatsApp. É só chamar que
-                  a gente já começa a preparar.
-                </p>
+          <Reveal>
+            <div className="relative overflow-hidden rounded-[2.5rem] bg-brand-red px-7 py-14 sm:px-14 sm:py-16">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_15%,rgba(201,150,44,0.35),transparent_55%)]" />
+              <div className="bg-noise pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay" />
+              <div className="relative grid items-center gap-10 lg:grid-cols-[1.4fr_1fr]">
+                <div>
+                  <p className="mb-3 flex items-center gap-2.5 text-[11px] font-semibold tracking-[0.22em] text-white/70 uppercase">
+                    <span className="h-px w-8 bg-white/40" />
+                    Siga e peça
+                  </p>
+                  <h2 className="font-display text-3xl leading-tight font-semibold tracking-tight text-white sm:text-[2.6rem]">
+                    Pão fresquinho todos os dias — acompanhe no Instagram.
+                  </h2>
+                  <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-white/80">
+                    Novidades da vitrine, quitutes do dia e encomendas pelo WhatsApp. É só chamar
+                    que a gente já começa a preparar.
+                  </p>
 
-                <div className="mt-9 flex flex-wrap gap-3">
-                  <a
-                    href={links.whatsappMsg}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2.5 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-brand-red transition-transform hover:-translate-y-0.5"
-                  >
-                    <MessageCircle className="h-4.5 w-4.5" strokeWidth={2.2} />
-                    {business.phone.display}
-                  </a>
-                  <a
-                    href={links.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2.5 rounded-full border border-white/40 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/15"
-                  >
-                    <Instagram className="h-4.5 w-4.5" />
-                    {business.instagram.handle}
-                  </a>
-                  <a
-                    href={links.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2.5 rounded-full border border-white/40 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/15"
-                  >
-                    <Facebook className="h-4.5 w-4.5" />
-                    Facebook
-                  </a>
+                  <div className="mt-9 flex flex-wrap gap-3">
+                    <a
+                      href={links.whatsappMsg}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2.5 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-brand-red transition-transform hover:-translate-y-0.5"
+                    >
+                      <MessageCircle className="h-4.5 w-4.5" strokeWidth={2.2} />
+                      {business.phone.display}
+                    </a>
+                    <a
+                      href={links.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2.5 rounded-full border border-white/40 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/15"
+                    >
+                      <Instagram className="h-4.5 w-4.5" />
+                      {business.instagram.handle}
+                    </a>
+                    <a
+                      href={links.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2.5 rounded-full border border-white/40 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/15"
+                    >
+                      <Facebook className="h-4.5 w-4.5" />
+                      Facebook
+                    </a>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    "/images/balcao-paes.jpg",
+                    "/images/salgados.jpg",
+                    "/images/vitrine-interior.jpg",
+                    "/images/salao.jpg",
+                  ].map((src, i) => (
+                    <img
+                      key={src}
+                      src={src}
+                      alt={
+                        [
+                          "Cestos de pão fresco no balcão",
+                          "Salgados assados na vitrine",
+                          "Vitrine de vidro da padaria vista de dentro",
+                          "Salão com mesas da lanchonete",
+                        ][i]
+                      }
+                      loading="lazy"
+                      className={`h-36 w-full rounded-2xl object-cover ring-1 ring-white/20 sm:h-40 ${
+                        i % 2 === 1 ? "translate-y-4" : ""
+                      }`}
+                    />
+                  ))}
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  "/images/balcao-paes.jpg",
-                  "/images/salgados.jpg",
-                  "/images/vitrine-interior.jpg",
-                  "/images/salao.jpg",
-                ].map((src, i) => (
-                  <img
-                    key={src}
-                    src={src}
-                    alt={
-                      [
-                        "Cestos de pão fresco no balcão",
-                        "Salgados assados na vitrine",
-                        "Vitrine de vidro da padaria vista de dentro",
-                        "Salão com mesas da lanchonete",
-                      ][i]
-                    }
-                    loading="lazy"
-                    className={`h-36 w-full rounded-2xl object-cover ring-1 ring-white/20 sm:h-40 ${
-                      i % 2 === 1 ? "translate-y-4" : ""
-                    }`}
-                  />
-                ))}
-              </div>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -852,6 +966,9 @@ function LandingPage() {
                   avaliações no Google
                 </span>
               </div>
+              <p className="mt-4 text-xs text-brand-brown-soft/70">
+                Feito com café passado na hora e pão saindo do forno. ☕
+              </p>
             </div>
 
             <div>
@@ -926,6 +1043,68 @@ function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* ============================ LIGHTBOX (VITRINE) ============================ */}
+      {lightboxItem !== null && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={lightboxItem.alt}
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-brand-brown/95 p-4 backdrop-blur-sm sm:p-10"
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            type="button"
+            aria-label="Fechar"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightbox(null);
+            }}
+            className="absolute top-4 right-4 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-brand-cream transition-colors hover:bg-white/25 sm:top-6 sm:right-6"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          <button
+            type="button"
+            aria-label="Foto anterior"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightbox((v) =>
+                v === null ? v : (v - 1 + business.gallery.length) % business.gallery.length,
+              );
+            }}
+            className="absolute left-3 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-brand-cream transition-colors hover:bg-white/25 sm:left-6 sm:h-12 sm:w-12"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <button
+            type="button"
+            aria-label="Próxima foto"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightbox((v) => (v === null ? v : (v + 1) % business.gallery.length));
+            }}
+            className="absolute right-3 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-brand-cream transition-colors hover:bg-white/25 sm:right-6 sm:h-12 sm:w-12"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+
+          <figure className="max-w-4xl" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={lightboxItem.src}
+              alt={lightboxItem.alt}
+              className="max-h-[76vh] w-auto rounded-2xl object-contain shadow-2xl ring-1 ring-white/10"
+            />
+            <figcaption className="mt-4 text-center font-display text-lg font-medium text-brand-cream italic">
+              {lightboxItem.label}
+              <span className="mt-1 block text-[11px] font-sans not-italic tracking-wider text-brand-cream/50 uppercase">
+                {(lightbox ?? 0) + 1} / {business.gallery.length}
+              </span>
+            </figcaption>
+          </figure>
+        </div>
+      )}
 
       {/* Botão flutuante de WhatsApp (mobile) */}
       <a
