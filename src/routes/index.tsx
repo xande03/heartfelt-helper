@@ -752,14 +752,13 @@ function LandingPage() {
             {business.products.map((p, i) => (
               <Reveal key={p.title} delay={(i % 2) * 110} className="h-full">
                 <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-brand-brown/10 bg-surface-card shadow-[0_10px_30px_-24px_rgba(46,27,18,0.4)] transition-all duration-300 hover:-translate-y-1.5 hover:border-brand-red/25 hover:shadow-[0_24px_50px_-22px_rgba(46,27,18,0.38)]">
-                  <div className="relative h-48 overflow-hidden sm:h-52">
+                  <div className="relative h-56 overflow-hidden bg-brand-sand sm:h-64 dark:bg-white/5">
                     <img
                       src={p.img}
                       alt={p.alt}
                       loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                      className="h-full w-full p-3 object-contain transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-brand-brown/55 via-transparent to-transparent" />
                     <span className="absolute bottom-3 left-4 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold tracking-wide text-brand-brown uppercase backdrop-blur-sm dark:bg-brand-brown/80 dark:text-ink">
                       <Sparkles className="h-3 w-3 text-brand-gold" />
                       {p.badge}

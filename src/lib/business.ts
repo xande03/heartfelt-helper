@@ -132,8 +132,8 @@ export const business = {
       items: ["Queijadinha", "Petit four", "Donuts", "Doces caseiros"],
     },
     {
-      img: "/images/salao.jpg",
-      alt: "Salão com mesas da lanchonete",
+      img: "/images/vitrine-interior.jpg",
+      alt: "Balcão de vidro com salgados na vitrine, visto de dentro",
       title: "Café & conveniência",
       badge: "Na hora",
       desc: "Café passado na hora, sucos, refrigerantes e tudo para abastecer a dispensa da casa.",
