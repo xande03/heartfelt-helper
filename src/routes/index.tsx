@@ -44,6 +44,7 @@ export const Route = createFileRoute("/")({
         content:
           "Pães fresquinhos todos os dias na Vila Bacanga, São Luís/MA. Padaria, conveniência, café e lanches rápidos. R. da Felicidade, 139-189 — peça pelo WhatsApp (98) 3228-2162.",
       },
+      { rel: "preconnect", href: "https://www.google.com" },
       { name: "theme-color", content: "#be2a2c" },
       { property: "og:type", content: "website" },
       { property: "og:title", content: "Panificadora e Conveniência Bacanga" },
@@ -757,6 +758,7 @@ function LandingPage() {
                       src={p.img}
                       alt={p.alt}
                       loading="lazy"
+                      decoding="async"
                       className="h-full w-full p-3 object-contain transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                     />
                     <span className="absolute bottom-3 left-4 inline-flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-semibold tracking-wide text-brand-brown uppercase backdrop-blur-sm dark:bg-brand-brown/80 dark:text-ink">
@@ -993,6 +995,7 @@ function LandingPage() {
                 src="/images/rua-do-bairro.jpg"
                 alt="Rua da Felicidade com a fachada da Panificadora Bacanga"
                 loading="lazy"
+                decoding="async"
                 className="-mt-[9%] h-[118%] w-full object-cover"
               />
             </Parallax>
@@ -1192,6 +1195,7 @@ function LandingPage() {
                 alt=""
                 aria-hidden="true"
                 loading="lazy"
+                decoding="async"
                 className="absolute inset-0 h-full w-full scale-110 object-cover opacity-25 blur-[2px]"
               />
               <iframe
@@ -1286,6 +1290,7 @@ function LandingPage() {
                         ][i]
                       }
                       loading="lazy"
+                      decoding="async"
                       style={{ animationDelay: `${i * 1.3}s` }}
                       className={`animate-float-slow h-36 w-full rounded-2xl object-cover ring-1 ring-white/20 sm:h-40 ${
                         i % 2 === 1 ? "translate-y-4" : ""

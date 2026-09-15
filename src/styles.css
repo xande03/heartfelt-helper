@@ -308,7 +308,8 @@
   .marquee-track,
   .animate-float,
   .animate-float-slow,
-  .menu-pop {
+  .menu-pop,
+  .animate-ping {
     animation: none;
   }
 }
