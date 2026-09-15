@@ -108,24 +108,24 @@ export const business = {
    */
   products: [
     {
-      img: "/images/balcao-paes.jpg",
-      alt: "Cestos de pão fresco no balcão da padaria",
+      img: "/images/paes-frango-desfiado.jpg",
+      alt: "Pão de frango desfiado recém-saído do forno",
       title: "Pães & bolos",
       badge: "Sai do forno",
       desc: "Pão francês quentinho, pão suíço de frango, roscas e bolos assados várias vezes ao dia.",
       items: ["Pão francês", "Pão suíço", "Rosca", "Bolos"],
     },
     {
-      img: "/images/salgados.jpg",
-      alt: "Salgados assados na vitrine",
+      img: "/images/salgados-folhados.jpg",
+      alt: "Salgados folhados dourados saindo da chapa",
       title: "Salgados & lanches",
       badge: "Quentinhos",
       desc: "A melhor bomba e o pastel folheado da cidade, com sanduíches e pizzas feitas na hora.",
       items: ["Bomba", "Pastel folheado", "Sanduíches", "Pizzas"],
     },
     {
-      img: "/images/vitrine-interior.jpg",
-      alt: "Balcão de vidro e vitrine de salgados vistos de dentro",
+      img: "/images/bolo-de-laranja.jpg",
+      alt: "Bolo de laranja com calda brilhante e rodelas de laranja",
       title: "Vitrine & doces",
       badge: "Da vitrine",
       desc: "Queijadinha, petit four de cebola, donuts e doces caseiros saindo quentinhos da vitrine.",
