@@ -361,7 +361,7 @@ function LandingPage() {
 
       {/* ============================ TOPO ============================ */}
       <div className="relative z-50 bg-brand-brown text-brand-cream">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-5 py-2 text-[11px] tracking-wide sm:text-xs">
+        <div className="mx-auto flex max-w-6xl 2xl:max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-1 px-5 py-2 text-[11px] tracking-wide sm:text-xs">
           <span className="inline-flex items-center gap-2">
             <MapPin className="h-3.5 w-3.5 text-brand-gold" strokeWidth={2} />
             {business.address.street} · {business.address.district}, {business.address.city}–
@@ -393,7 +393,7 @@ function LandingPage() {
         className="fixed top-0 left-0 z-50 h-[3px] rounded-r-full bg-gradient-to-r from-brand-red to-brand-gold"
         style={{ width: `${progress * 100}%` }}
       />
-      <header className="sticky top-6 z-40 mx-auto w-full max-w-[74rem] px-4 sm:px-5">
+      <header className="sticky top-6 z-40 mx-auto w-full max-w-[74rem] 2xl:max-w-7xl px-4 sm:px-5">
         {/* Parallax: a ilha se move alguns px com atraso em relação ao scroll */}
         <div
           className="mx-auto w-full will-change-transform transition-transform duration-700 ease-out"
@@ -415,10 +415,10 @@ function LandingPage() {
                 src="/images/logo.png"
                 alt={`Brasão ${business.name}`}
                 className={`rounded-full object-cover ring-2 ring-brand-gold/50 transition-all duration-500 ${
-                  scrolled ? "h-9 w-9" : "h-11 w-11"
+                  scrolled ? "h-9 w-9" : "h-10 w-10 sm:h-11 sm:w-11"
                 }`}
               />
-              <span className="leading-none">
+              <span className="hidden leading-none min-[380px]:block">
                 <span
                   className={`block font-display font-semibold tracking-tight transition-all duration-500 ${
                     scrolled ? "text-[13px]" : "text-[15px] sm:text-base"
@@ -572,7 +572,7 @@ function LandingPage() {
         />
         <div className="bg-noise pointer-events-none absolute inset-0 opacity-[0.05] mix-blend-overlay" />
 
-        <div className="relative mx-auto max-w-6xl px-5 pt-16 pb-14 sm:pt-24 sm:pb-20">
+        <div className="relative mx-auto max-w-6xl 2xl:max-w-7xl px-5 pt-16 pb-14 sm:pt-24 sm:pb-20">
           <div className="max-w-3xl">
             <Reveal animateOnMount delay={0}>
               <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -585,7 +585,7 @@ function LandingPage() {
             </Reveal>
 
             <Reveal animateOnMount delay={120}>
-              <h1 className="font-display text-[2.6rem] leading-[1.03] font-semibold tracking-[-0.02em] text-white sm:text-6xl lg:text-[4.6rem]">
+              <h1 className="font-display text-[clamp(1.75rem,8.8vw,2.6rem)] leading-[1.03] font-semibold tracking-[-0.02em] text-white sm:text-6xl lg:text-[4.6rem]">
                 O pão quentinho
                 <span className="block text-brand-gold italic">sai do forno todo dia.</span>
               </h1>
@@ -662,7 +662,7 @@ function LandingPage() {
 
       {/* ========================= FAIXA DE VANTAGENS ========================= */}
       <section className="border-b border-brand-brown/10 bg-brand-sand">
-        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-px px-5 py-6 sm:grid-cols-4">
+        <div className="mx-auto grid max-w-6xl 2xl:max-w-7xl grid-cols-2 gap-px px-5 py-6 sm:grid-cols-4">
           {[
             { icon: Flame, label: "Assado várias vezes ao dia" },
             { icon: ShoppingBasket, label: "Conveniência completa" },
@@ -679,7 +679,7 @@ function LandingPage() {
 
       {/* ============================ DESTAQUES ============================ */}
       <section id="destaques" className="scroll-mt-20 bg-surface px-5 py-20 sm:py-28">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-6xl 2xl:max-w-7xl">
           <Reveal className="max-w-2xl">
             <SectionLabel>O que você encontra aqui</SectionLabel>
             <h2 className="font-display text-3xl leading-tight font-semibold tracking-tight sm:text-[2.75rem]">
@@ -736,7 +736,7 @@ function LandingPage() {
         id="produtos"
         className="scroll-mt-20 border-t border-brand-brown/5 bg-surface-card px-5 py-20 sm:py-28"
       >
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-6xl 2xl:max-w-7xl">
           <Reveal className="max-w-2xl">
             <SectionLabel>Sai do forno todos os dias</SectionLabel>
             <h2 className="font-display text-3xl leading-tight font-semibold tracking-tight sm:text-[2.75rem]">
@@ -810,7 +810,7 @@ function LandingPage() {
 
       {/* ============================ VITRINE ============================ */}
       <section id="vitrine" className="scroll-mt-20 bg-brand-sand px-5 py-20 sm:py-28">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-6xl 2xl:max-w-7xl">
           <Reveal className="flex flex-wrap items-end justify-between gap-6">
             <div className="max-w-xl">
               <SectionLabel>A vitrine de hoje</SectionLabel>
@@ -865,7 +865,7 @@ function LandingPage() {
 
       {/* ============================ PROPOSIITO ============================ */}
       <section className="scroll-mt-20 bg-surface px-5 py-20 sm:py-28">
-        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+        <div className="mx-auto grid max-w-6xl 2xl:max-w-7xl gap-12 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
           <Reveal>
             <SectionLabel>Nosso propósito</SectionLabel>
             <h2 className="font-display text-3xl leading-tight font-semibold tracking-tight sm:text-[2.75rem]">
@@ -935,7 +935,7 @@ function LandingPage() {
       <section className="relative overflow-hidden bg-brand-brown px-5 py-20 text-brand-cream sm:py-28">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_15%_10%,rgba(190,42,44,0.30),transparent_55%)]" />
         <div className="bg-noise pointer-events-none absolute inset-0 opacity-[0.05] mix-blend-overlay" />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-2 lg:gap-20">
+        <div className="relative mx-auto grid max-w-6xl 2xl:max-w-7xl items-center gap-14 lg:grid-cols-2 lg:gap-20">
           <Reveal>
             <p className="mb-3 flex items-center gap-2.5 text-[11px] font-semibold tracking-[0.22em] text-brand-gold uppercase">
               <span className="h-px w-8 bg-brand-gold/40" />
@@ -956,12 +956,12 @@ function LandingPage() {
               conveniência — tudo numa esquina só.
             </p>
 
-            <dl className="mt-10 grid grid-cols-3 gap-6 border-t border-white/15 pt-8">
+            <dl className="mt-10 grid grid-cols-1 gap-5 border-t border-white/15 pt-8 sm:grid-cols-3 sm:gap-6">
               <div>
                 <dt className="text-[11px] tracking-wider text-brand-cream/50 uppercase">
                   Café da manhã
                 </dt>
-                <dd className="mt-1 font-display text-xl font-semibold text-white">
+                <dd className="mt-1 font-display text-lg font-semibold text-white sm:text-xl">
                   a partir das 05:45
                 </dd>
               </div>
@@ -969,7 +969,7 @@ function LandingPage() {
                 <dt className="text-[11px] tracking-wider text-brand-cream/50 uppercase">
                   Domingo
                 </dt>
-                <dd className="mt-1 font-display text-xl font-semibold text-white">
+                <dd className="mt-1 font-display text-lg font-semibold text-white sm:text-xl">
                   06:00 – 12:00
                 </dd>
               </div>
@@ -977,7 +977,9 @@ function LandingPage() {
                 <dt className="text-[11px] tracking-wider text-brand-cream/50 uppercase">
                   Permanência
                 </dt>
-                <dd className="mt-1 font-display text-xl font-semibold text-white">~15 min</dd>
+                <dd className="mt-1 font-display text-lg font-semibold text-white sm:text-xl">
+                  ~15 min
+                </dd>
               </div>
             </dl>
           </Reveal>
@@ -1009,7 +1011,7 @@ function LandingPage() {
 
       {/* ============================ AVALIAÇÕES ============================ */}
       <section id="avaliacoes" className="scroll-mt-20 bg-surface px-5 py-20 sm:py-28">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-6xl 2xl:max-w-7xl">
           <Reveal className="flex flex-wrap items-end justify-between gap-8">
             <div className="max-w-xl">
               <SectionLabel>Quem já provou</SectionLabel>
@@ -1083,7 +1085,7 @@ function LandingPage() {
 
       {/* ============================ HORÁRIOS ============================ */}
       <section id="horarios" className="scroll-mt-20 bg-brand-sand px-5 py-20 sm:py-28">
-        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
+        <div className="mx-auto grid max-w-6xl 2xl:max-w-7xl gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
           <Reveal>
             <SectionLabel>Horários & localização</SectionLabel>
             <h2 className="font-display text-3xl leading-tight font-semibold tracking-tight sm:text-[2.75rem]">
@@ -1215,7 +1217,7 @@ function LandingPage() {
 
       {/* ============================ INSTAGRAM / CTA ============================ */}
       <section id="contato" className="scroll-mt-20 bg-surface px-5 py-20 sm:py-24">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-6xl 2xl:max-w-7xl">
           <Reveal>
             <div className="relative overflow-hidden rounded-[2.5rem] bg-brand-red px-7 py-14 sm:px-14 sm:py-16">
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_15%,rgba(201,150,44,0.35),transparent_55%)]" />
@@ -1318,7 +1320,7 @@ function LandingPage() {
 
       {/* ============================ RODAPÉ ============================ */}
       <footer className="border-t border-brand-brown/10 bg-surface px-5 py-14">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-6xl 2xl:max-w-7xl">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-2">
               <div className="flex items-center gap-3">
