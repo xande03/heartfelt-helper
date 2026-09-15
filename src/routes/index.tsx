@@ -401,7 +401,7 @@ function LandingPage() {
           style={{ transform: `translateY(${pillOffset}px)` }}
         >
           <div
-            className={`flex items-center justify-between gap-3 rounded-full border px-3 py-2 backdrop-blur-xl transition-all duration-500 hover:-translate-y-[2px] ring-1 ring-brand-gold/30 ${
+            className={`flex items-center justify-between gap-3 rounded-full border px-3 py-2 backdrop-blur-xl transition-all duration-500 hover:-translate-y-[2px] ring-1 ring-brand-gold/60 dark:ring-brand-gold/70 ${
               scrolled
                 ? "border-brand-brown/10 bg-surface/90 shadow-[0_18px_44px_-18px_rgba(46,27,18,0.5)]"
                 : "border-white/50 bg-surface/75 shadow-[0_12px_34px_-18px_rgba(46,27,18,0.35)]"
